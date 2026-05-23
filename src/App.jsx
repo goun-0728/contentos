@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { C, DS, DS_KEYS, TPL_LABELS, TPL_COMPAT, TASKS, BLOG_TONES, getSys, EXTRA_SECTIONS, getExtraSectSys, mkSec } from './constants'
 import { parseBlocks, parseSections, capturePNG, downloadURL } from './utils'
 import { generateContent } from './api/generate'
+import { generateImage } from './api/images'
 import SectionEditor from './components/SectionEditor'
 import { FONT_OPTS, SHAPE_DEFS } from './components/SectionTemplates'
 import CardNewsView from './components/CardNewsEditor'
@@ -533,6 +534,34 @@ function SubQ({ label, children }) {
   )
 }
 
+async function generateSectionImages(sections, onProgress) {
+  const targets = sections.filter(s => s.imagePrompt && !s.secImg)
+  const next = sections.map(s => ({ ...s }))
+
+  for (let i = 0; i < targets.length; i++) {
+    const target = targets[i]
+    const idx = next.findIndex(s => s._id === target._id)
+    if (idx < 0) continue
+
+    onProgress?.(`AI 이미지 생성 중 (${i + 1}/${targets.length})`)
+
+    try {
+      const image = await generateImage({
+        prompt: target.imagePrompt,
+        size: '1024x1536',
+        quality: 'medium',
+      })
+      next[idx] = { ...next[idx], secImg: image, imageStatus: 'generated' }
+    } catch (e) {
+      next[idx] = { ...next[idx], imageStatus: 'failed', imageError: e.message }
+      console.error(e)
+    }
+  }
+
+  onProgress?.('')
+  return next
+}
+
 /* ── 추가 섹션 AI 출력 파서 ─────────────────────────── */
 function parseExtraSection(text, typeInfo) {
   const gf = (k, t) => { const rx = new RegExp(k + ':\\s*([^\\n]+)'); const f = t.match(rx); return f ? f[1].trim() : '' }
@@ -953,6 +982,8 @@ export default function App() {
 
   // 제품 사진 업로드
   const [productImgs, setProductImgs] = useState([])
+  const [autoGenerateImages, setAutoGenerateImages] = useState(true)
+  const [imageGenStatus, setImageGenStatus] = useState('')
   const handleProductImgs = e => {
     const files = Array.from(e.target.files)
     const remaining = 5 - productImgs.length
@@ -1033,7 +1064,13 @@ export default function App() {
         setCardGenKey(k => k + 1)
       }
       if (tid === 'detail') {
-        setDetailData(null); try { localStorage.removeItem('cos_detail_data') } catch {}
+        setImageGenStatus('')
+        if (autoGenerateImages) {
+          const generated = await generateSectionImages(parseSections(text), setImageGenStatus)
+          saveDetailData(generated)
+        } else {
+          setDetailData(null); try { localStorage.removeItem('cos_detail_data') } catch {}
+        }
         setDetailGenKey(k => k + 1)
       }
       const h = { id: Date.now(), taskId: tid, label: task.label, preview: sharedInput.slice(0, 60), result: text, ts: new Date().toISOString() }
@@ -1042,6 +1079,7 @@ export default function App() {
     } catch (e) {
       setError('오류: ' + e.message)
     } finally {
+      setImageGenStatus('')
       setTabLoading(prev => ({ ...prev, [tid]: false }))
     }
   }
@@ -1150,6 +1188,21 @@ export default function App() {
                   </div>
                 ))}
               </div>
+            </SubQ>
+
+            <SubQ label="AI 이미지 생성">
+              <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer', userSelect:'none' }}>
+                <input
+                  type="checkbox"
+                  checked={autoGenerateImages}
+                  onChange={e => setAutoGenerateImages(e.target.checked)}
+                  style={{ width:16, height:16, accentColor:'#1D6B45' }}
+                />
+                상세페이지 섹션 이미지를 자동 생성해서 배치
+              </label>
+              <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
+                내부 프롬프트를 사용해 생성하며, 사용자 화면에는 프롬프트를 직접 노출하지 않습니다.
+              </p>
             </SubQ>
 
             <SubQ label="카테고리">
@@ -1284,7 +1337,7 @@ export default function App() {
           {loading && (
             <div style={{ background: C.sur, borderRadius: 14, border: `1.5px solid ${C.bd}`, padding: '28px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 22, color: C.mu, fontSize: 13 }}>
-                <Spin />{task.id === 'detail' ? '상세페이지 섹션 생성 중…' : task.id === 'card' ? '카드뉴스 5장 생성 중…' : '블로그 포스팅 생성 중…'}
+                <Spin />{task.id === 'detail' ? (imageGenStatus || '상세페이지 섹션 생성 중…') : task.id === 'card' ? '카드뉴스 5장 생성 중…' : '블로그 포스팅 생성 중…'}
               </div>
               {[95, 75, 85, 60, 90, 50].map((w, i) => <div key={i} style={{ height: 10, background: C.alt, borderRadius: 5, width: `${w}%`, marginBottom: 9, animation: `pl 1.5s ease ${i * .12}s infinite` }} />)}
             </div>
