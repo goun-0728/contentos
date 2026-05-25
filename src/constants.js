@@ -500,6 +500,8 @@ Strategic rules:
 - Image prompts must always be English.
 - Generate a high-quality full section set that could be sold as a Fiverr deliverable.
 - The user should not need to choose Hero, Benefit, Feature, or templates manually. You must recommend the section flow and template fit from product category, platform, goal, tone, and product facts.
+- For Amazon A+, use the most common practical structure as the baseline: hero, problem/desire or brand setup, benefits, feature explanation, lifestyle/use case, trust/proof, comparison when useful, FAQ when useful, and CTA.
+- Section, Template, and Block architecture is internal only. Do not expose template names, prompt text, or block architecture to the user-facing copy.
 - Do not write Korean Smartstore copy.
 - Do not generate blog, card news, SNS, Naver, Instagram, Facebook, or Threads content.
 - Copy must feel like premium US DTC brand / Amazon A+ / Shopify premium theme copy.

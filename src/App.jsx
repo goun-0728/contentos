@@ -1023,7 +1023,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
 
   return (
     <div>
-      {rep && (
+      {false && rep && (
         <div style={{ background: '#FFFFFF', padding: '20px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: C.tx, letterSpacing: '-0.02em' }}>📋 기획 보고서</span>
@@ -1035,7 +1035,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
-      {(pageTitle || metaDesc) && (
+      {false && (pageTitle || metaDesc) && (
         <div style={{ background: '#EFF6FF', padding: '20px 0', borderTop: '1px solid #BFDBFE', borderBottom: '1px solid #BFDBFE' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: '#1E40AF', letterSpacing: '-0.02em' }}>🔍 Page Title & Meta Description</span>
@@ -1062,7 +1062,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
-      {sects.length > 0 && (
+      {false && sects.length > 0 && (
         <div style={{ background: '#FEFCE8', padding: '20px 0 24px', borderTop: '1px solid #FEF08A', borderBottom: '1px solid #FEF08A' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: '#713F12', letterSpacing: '-0.02em' }}>📐 섹션별 기획안</span>
@@ -1125,7 +1125,17 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
 
       {sects.length > 0 && (
         <div style={{ background:'#F5F2ED', paddingTop:32, paddingBottom:60 }}>
-          <div style={{ display:'flex', alignItems:'flex-start' }}>
+          <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 12px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:16 }}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:800, color:C.tx }}>Amazon A+ Delivery Preview</div>
+                <div style={{ fontSize:11, color:C.fa, marginTop:3 }}>Generated in English from your product and brand information.</div>
+              </div>
+              <button onClick={dlAllPNG} disabled={dlAll}
+                style={{ padding:'9px 14px', borderRadius:8, border:'none', background:dlAll?'#ECEAE5':C.tx, color:dlAll?C.fa:'#fff', fontSize:12, fontWeight:800, cursor:dlAll?'not-allowed':'pointer' }}>
+                {dlAll ? 'Downloading...' : 'Download PNG Set'}
+              </button>
+            </div>
             {/* 캔버스 */}
             <div style={{ flex:1, minWidth:0 }}
               onClick={() => setSelectedIdx(null)}
@@ -1138,18 +1148,14 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                   <SectionEditor
                     key={s._id || i}
                     sec={s} idx={i} onUpdate={upd}
-                    isSelected={selectedIdx === i}
-                    onSelect={selectSection}
-                    activeField={selectedIdx === i ? activeField : null}
-                    onActiveFieldChange={f => { setActiveField(f); setActiveOverlay(null) }}
-                    activeOverlay={selectedIdx === i ? activeOverlay : null}
-                    onActiveOverlayChange={id => { setActiveOverlay(id); setActiveField(null) }}
+                    isSelected={false}
+                    previewOnly
                   />
                 ))}
               </div>
             </div>
             {/* 스티키 편집 패널 */}
-            <div style={{ width:340, flexShrink:0, position:'sticky', top:52, alignSelf:'flex-start' }}>
+            {false && <div style={{ width:340, flexShrink:0, position:'sticky', top:52, alignSelf:'flex-start' }}>
               <CanvaPanel
                 sec={selectedIdx !== null ? sects[selectedIdx] : null}
                 idx={selectedIdx}
@@ -1163,18 +1169,18 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                 onDlAll={dlAllPNG}
                 onDlSection={dlSectionPNG}
               />
-            </div>
+            </div>}
           </div>
         </div>
       )}
 
-      {seo && (
+      {false && seo && (
         <div style={{ marginTop: 20 }}>
           <Blk title={seo.title} lines={seo.lines} />
         </div>
       )}
 
-      {addModal !== null && (
+      {false && addModal !== null && (
         <div onClick={() => setAddModal(null)}
           style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div onClick={e => e.stopPropagation()}
@@ -1199,7 +1205,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
-      {deleteConfirm !== null && (
+      {false && deleteConfirm !== null && (
         <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div style={{ background:'#fff', borderRadius:14, padding:'28px 32px', maxWidth:320, width:'90%', boxShadow:'0 20px 60px rgba(0,0,0,0.3)', textAlign:'center' }}>
             <p style={{ fontSize:15, fontWeight:600, color:C.tx, margin:'0 0 6px' }}>섹션을 삭제하시겠습니까?</p>
@@ -1490,7 +1496,7 @@ export default function App() {
         `Output Style: ${outputStyle}`,
         `Generation Target: Generate a complete commerce section set, not one selected section.`,
         `Recommended Base Flow: ${DEFAULT_SECTION_FLOW.join(' > ')}`,
-        manualSectionSelection && `Manual Advanced Section Hint: prioritize ${sectionType} with template ${templateVariant}, but still produce a complete section set.`,
+        'Use the most common Amazon A+ structure automatically: Hero, brand/problem or desire, benefits, product features, lifestyle/use case, trust/proof, comparison when useful, FAQ when useful, CTA.',
         targetCustomer && `Target Customer: ${targetCustomer.trim()}`,
         customerPainPoint && `Customer Pain Point: ${customerPainPoint.trim()}`,
         buyingMotivation && `Buying Motivation: ${buyingMotivation.trim()}`,
@@ -1508,7 +1514,7 @@ export default function App() {
 - ${categoryQuestions.differentiation}: ${quiz.differentiator.trim() || '(not provided)'}`,
         'If any input is Korean, translate it internally into natural English before writing copy or image prompts.',
         'Final section copy must be English. Image prompts must be English.',
-        'AI must decide the final section sequence and template fit from product category, platform, goal, and tone.',
+        'AI must decide the final section sequence and template fit internally from product category, platform, goal, and tone. Never expose template, block, or prompt details in the visible result.',
         'Output 5-9 sections using the required [SECTION n - Section Name] format. Start with Hero and end with CTA. Include or exclude sections based on the product and goal.',
       ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
@@ -1638,9 +1644,8 @@ This concept must differ from the other options in section flow and at least one
 
   const incompletedSteps = [
     !step1Done && 'STEP 1',
-    !step2Done && 'STEP 2',
-    !step3Done && 'STEP 3',
-    !step4Done && 'STEP 4',
+    !step3Done && 'STEP 2',
+    !step4Done && 'STEP 3',
     !step5Done && 'STEP 5',
     !step6Done && 'STEP 6',
     !step7Done && 'STEP 7',
@@ -1700,8 +1705,8 @@ This concept must differ from the other options in section flow and at least one
           {/* 타이틀 (클릭 시 전체 리셋) */}
           <div onClick={resetAll} onMouseEnter={() => setTitleHover(true)} onMouseLeave={() => setTitleHover(false)}
             style={{ textAlign: 'center', marginBottom: 32, cursor: 'pointer', opacity: titleHover ? 0.6 : 1, transition: 'opacity .15s' }}>
-            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>AI Commerce Section Builder</h1>
-            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>Amazon A+ static sections and Shopify interactive sections</p>
+            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>Amazon A+ Content Preview Generator</h1>
+            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>Enter product and brand information. ContentOS creates an English Amazon A+ delivery preview automatically.</p>
           </div>
 
           {/* ── STEP 1: Product basics ── */}
@@ -1763,16 +1768,16 @@ This concept must differ from the other options in section flow and at least one
                   onChange={e => setAutoGenerateImages(e.target.checked)}
                   style={{ width:16, height:16, accentColor:'#1D6B45' }}
                 />
-                Generate supporting section images automatically
+                Generate supporting images automatically
               </label>
               <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
-                Prompts stay internal. Uploaded product photos remain the source of product truth.
+                Uploaded product photos remain the source of product truth. Internal generation details are never shown.
               </p>
             </SubQ>
           </StepCard>
 
           {/* ── STEP 2: Platform and section mode ── */}
-          <StepCard stepNum={2} label="Platform & Goal" done={step2Done}>
+          {false && <StepCard stepNum={2} label="Platform & Goal" done={step2Done}>
             <SubQ label="Platform">
               <OptionBtns options={PLATFORMS} value={platform} onChange={setPlatform} />
             </SubQ>
@@ -1782,16 +1787,16 @@ This concept must differ from the other options in section flow and at least one
             <SubQ label="Output Style">
               <OptionBtns options={OUTPUT_STYLES} value={outputStyle} onChange={setOutputStyle} />
             </SubQ>
-          </StepCard>
+          </StepCard>}
 
           {/* ── STEP 3: Section and template ── */}
-          <div style={{ marginBottom: 10 }}>
+          {false && <div style={{ marginBottom: 10 }}>
             <button onClick={() => setAdvancedOpen(o => !o)}
               style={{ width:'100%', padding:'12px 16px', borderRadius:12, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, fontSize:13, fontWeight:800, textAlign:'left', cursor:'pointer' }}>
               Advanced Settings {advancedOpen ? '▲' : '▼'}
             </button>
-          </div>
-          {advancedOpen && (
+          </div>}
+          {false && advancedOpen && (
           <StepCard stepNum={0} label="Advanced Settings" done={true}>
             <SubQ label="Section">
               <OptionBtns options={availableSectionTypes} value={sectionType} onChange={setSectionType} />
@@ -1846,10 +1851,10 @@ This concept must differ from the other options in section flow and at least one
           )}
 
           {/* ── STEP 4: Conversion context ── */}
-          <StepCard stepNum={3} label="Customer & Offer" done={step3Done}>
+          <StepCard stepNum={2} label="Brand & Customer" done={step3Done}>
             {triedGenerate && !step4Done && (
               <div style={{ padding:'10px 12px', background:'#fff7ed', border:'1px solid #fed7aa', borderRadius:9, color:'#c2410c', fontSize:12, fontWeight:700, marginBottom:12 }}>
-                Please complete all required fields before generating your section.
+                Please complete all required fields before generating your preview.
               </div>
             )}
             <SubQ label={categoryQuestions.targetCustomer}>
@@ -1910,6 +1915,9 @@ This concept must differ from the other options in section flow and at least one
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
+            <SubQ label="Visual Direction">
+              <OptionBtns options={OUTPUT_STYLES} value={outputStyle} onChange={setOutputStyle} />
+            </SubQ>
             <SubQ label="Additional Tone Detail">
               <input value={brandToneDetail} onChange={e => setBrandToneDetail(e.target.value)}
                 placeholder="Premium but not too cold. Natural and trustworthy."
@@ -1924,12 +1932,12 @@ This concept must differ from the other options in section flow and at least one
             </SubQ>
           </StepCard>
 
-          <StepCard stepNum={4} label="Generate" done={step4Done}>
+          <StepCard stepNum={3} label="Generate" done={step4Done}>
             <SubQ label="Generation Mode">
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:8 }}>
                 {[
-                  { key:'Fast Draft', title:'Fast Draft', desc:'1 full section set', sub:'Text/layout first, 1-2 representative images to control cost' },
-                  { key:'Multi Concept', title:'Multi Concept', desc:'3 full section set directions', sub:'Higher cost, better for Fiverr/client presentation' },
+                  { key:'Fast Draft', title:'Fast Draft', desc:'1 complete Amazon A+ preview', sub:'Text/layout first, 1-2 representative images to control cost' },
+                  { key:'Multi Concept', title:'Multi Concept', desc:'3 complete Amazon A+ preview directions', sub:'Higher cost, better for Fiverr/client presentation' },
                 ].map(mode => {
                   const on = generateMode === mode.key
                   return (
@@ -1956,7 +1964,7 @@ This concept must differ from the other options in section flow and at least one
             <SubQ label="Image Cost Control">
               <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
                 <input type="checkbox" checked={generateAllSectionImages} onChange={e => setGenerateAllSectionImages(e.target.checked)} style={{ width:16, height:16, accentColor:'#1D6B45' }} />
-                Generate images for all sections
+                Generate images for every Amazon A+ module
               </label>
               <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
                 Off by default. ContentOS generates only representative images and uses upload slots/placeholders for the rest.
@@ -1992,7 +2000,7 @@ This concept must differ from the other options in section flow and at least one
           {/* ── Generate section ── */}
           <div style={{ background: '#EFF6FF', borderRadius: 16, border: `1.5px solid ${allDone ? '#BFDBFE' : '#FECACA'}`, overflow: 'hidden', marginBottom: 12, boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
             <div style={{ padding: '10px 16px', background: '#DBEAFE', borderBottom: '1px solid #BFDBFE' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Full Section Set</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Amazon A+ Preview</span>
             </div>
             <div style={{ display: 'none', gridTemplateColumns: `repeat(${TASKS.length},1fr)`, gap: 8, padding: '10px 14px', borderBottom: `1px solid ${C.bd}` }}>
               {TASKS.map(t => {
@@ -2029,13 +2037,13 @@ This concept must differ from the other options in section flow and at least one
             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {allDone
-                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — AI will generate a full {platform} section set</p>
+                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — AI will generate an English Amazon A+ preview</p>
                   : <p style={{ fontSize: 11, color: '#EF4444', margin: 0 }}>미완료: {incompletedSteps.join(', ')}</p>
                 }
               </div>
               <button onClick={run} disabled={loading}
                 style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: loading ? '#ECEAE5' : C.tx, color: loading ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
-                {loading ? <><Spin />Generating…</> : '✦ Generate Full Section Set'}
+                {loading ? <><Spin /> Generating...</> : 'Generate Amazon A+ Preview'}
               </button>
             </div>
           </div>

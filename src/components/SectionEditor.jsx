@@ -132,6 +132,7 @@ export default function SectionEditor({
   isSelected, onSelect,
   activeField, onActiveFieldChange,
   activeOverlay, onActiveOverlayChange,
+  previewOnly = false,
 }) {
   const [scale,   setScale]   = useState(1)
   const [secMeta, setSecMeta] = useState({})
@@ -194,13 +195,13 @@ export default function SectionEditor({
 
   return (
     <div
-      onClick={e => { onSelect?.(idx); e.stopPropagation() }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={e => { if (!previewOnly) onSelect?.(idx); e.stopPropagation() }}
+      onMouseEnter={() => !previewOnly && setHovered(true)}
+      onMouseLeave={() => !previewOnly && setHovered(false)}
       style={{ position: 'relative', cursor: 'default' }}
     >
       {/* 선택/호버 테두리 오버레이 — layout에 영향 없음 */}
-      {(isSelected || hovered) && (
+      {!previewOnly && (isSelected || hovered) && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none',
           border: isSelected ? '3px solid #2563EB' : '2px solid #93C5FD',
@@ -208,7 +209,7 @@ export default function SectionEditor({
       )}
 
       {/* 섹션 배지 */}
-      {(isSelected || hovered) && (
+      {false && !previewOnly && (isSelected || hovered) && (
         <div style={{
           position:'absolute', top:8, left:8, zIndex:21, pointerEvents:'none',
           background: isSelected ? '#3b82f6' : 'rgba(0,0,0,0.4)',
@@ -231,7 +232,7 @@ export default function SectionEditor({
           >
             <div style={{ width:BASE_CARD_W, transformOrigin:'top left', transform:`scale(${canvasScale})` }}>
               <Tpl
-                s={sec} img={img} t={t} editing={true} onChange={change}
+                s={sec} img={img} t={t} editing={!previewOnly} onChange={change}
                 secMeta={secMeta}
                 onSecMeta={(key,val) => setSecMeta(p => ({...p,[key]:val}))}
                 onFieldFocus={f => { onActiveFieldChange?.(f); onActiveOverlayChange?.(null) }}
