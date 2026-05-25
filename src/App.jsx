@@ -321,6 +321,27 @@ const CATEGORY_QUESTIONS = {
   },
 }
 
+const CATEGORY_FOCUS_OPTIONS = {
+  'Food & Grocery': ['맛', '신선도', '원산지', '건강', '선물용'],
+  'Beauty & Personal Care': ['피부 자극', '깔끔한 사용감', '빠른 관리', '프리미엄 관리', '성분/기술'],
+  'Health & Wellness': ['건강 목표', '성분', '루틴', '신뢰성', '규제 표현 주의'],
+  'Home & Kitchen': ['편의성', '내구성', '디자인', '수납', '사용 전후 차이'],
+  'Electronics & Tech': ['성능', '편의성', '디자인', '내구성', '호환성'],
+  'Pet Supplies': ['안전성', '편안함', '세척', '내구성', '보호자 편의'],
+  'Baby & Kids': ['안전성', '편안함', '위생', '선물용', '성장/학습'],
+  'Fashion & Apparel': ['핏', '소재', '스타일', '활동성', '선물용'],
+  'Sports & Outdoor': ['성능', '내구성', '휴대성', '안전성', '야외 사용'],
+  'Tools & Hardware': ['성능', '내구성', '안전성', '정밀도', '작업 효율'],
+  'Digital Product': ['문제 해결', '사용 편의성', '시간 절약', '전문성', '결과물 품질'],
+  Other: ['문제 해결', '차별점', '신뢰성', '사용 장면', '구매 이유'],
+}
+
+const FAST_DRAFT_IMAGE_ROLES = ['hero', 'benefit', 'feature', 'lifestyle', 'cta']
+function shouldGenerateFastDraftImage(section) {
+  const role = `${section.sectionType || ''} ${section.title || ''}`.toLowerCase()
+  return FAST_DRAFT_IMAGE_ROLES.some(k => role.includes(k))
+}
+
 const MAX_PRODUCT_IMAGE_BYTES = 850 * 1024
 
 function dataUrlBytes(dataUrl) {
@@ -1098,6 +1119,7 @@ function createImageBrief(section, context = {}) {
     targetCustomer: context.targetCustomer || '',
     painPoint: context.customerPainPoint || '',
     buyingMotivation: context.buyingMotivation || '',
+    focusPoints: context.focusPoints || '',
     keyBenefits: context.productBenefits || '',
     keyFeatures: context.productFeatures || '',
     differentiation: context.differentiation || '',
@@ -1135,8 +1157,8 @@ function checkInputReflection(sections, context = {}) {
   return warnings
 }
 
-function strengthenImagePrompt(prompt, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, sectionType, uploadedProductPhoto, imageStrategy, imageBrief }) {
-  const brief = imageBrief || createImageBrief({ sectionType }, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, uploadedProductPhoto })
+function strengthenImagePrompt(prompt, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, focusPoints, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, sectionType, uploadedProductPhoto, imageStrategy, imageBrief }) {
+  const brief = imageBrief || createImageBrief({ sectionType }, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, focusPoints, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, uploadedProductPhoto })
   const category = productCategory?.trim() || 'infer the exact product category from the product name'
   const name = productName?.trim() || 'the specified product'
   const lower = `${name} ${category}`.toLowerCase()
@@ -1622,6 +1644,7 @@ export default function App() {
   const [buyingMotivation, setBuyingMotivation] = useState('')
   const [productBenefits, setProductBenefits] = useState('')
   const [productFeatures, setProductFeatures] = useState('')
+  const [focusPoints, setFocusPoints] = useState([])
   const [brandToneInput, setBrandToneInput] = useState('')
   const [brandToneDetail, setBrandToneDetail] = useState('')
   const [referenceUrl, setReferenceUrl] = useState('')
@@ -1770,7 +1793,7 @@ export default function App() {
   const [reflectionWarnings, setReflectionWarnings] = useState([])
   const handleProductImgs = async e => {
     const files = Array.from(e.target.files)
-    const remaining = 5 - productImgs.length
+    const remaining = 3 - productImgs.length
     setError('')
     for (const f of files.slice(0, remaining)) {
       try {
@@ -1779,7 +1802,7 @@ export default function App() {
           setError('업로드한 이미지가 너무 큽니다. 더 작은 이미지를 업로드하거나 자동 압축을 사용해주세요.')
           continue
         }
-        setProductImgs(prev => prev.length < 5 ? [...prev, compressed] : prev)
+        setProductImgs(prev => prev.length < 3 ? [...prev, compressed] : prev)
       } catch (err) {
         setError(err.message || '업로드한 이미지를 압축하지 못했습니다.')
       }
@@ -1832,6 +1855,7 @@ export default function App() {
     setBuyingMotivation('')
     setProductBenefits('')
     setProductFeatures('')
+    setFocusPoints([])
     setBrandToneInput('')
     setBrandToneDetail('')
     setReferenceUrl('')
@@ -1870,6 +1894,7 @@ export default function App() {
         selectedCategoryText && `Product Category: ${selectedCategoryText}`,
         productSubCategory && `Product Subcategory: ${productSubCategory}`,
         `Product Description: ${sharedInput.trim()}`,
+        focusPoints.length > 0 && `Selected Strategy Focus Points: ${focusPoints.join(', ')}`,
         productImgs.length > 0 && `Product Photo Uploads: ${productImgs.length} uploaded image(s). Treat uploaded product photos as the source of truth for product shape, color, packaging, material, and visual identity.`,
         `Platform: ${platform}`,
         `Primary Goal: ${generationGoal}`,
@@ -1902,7 +1927,7 @@ export default function App() {
         'Output 5-9 sections using the required [SECTION n - Section Name] format. Start with Hero and end with CTA. Include or exclude sections based on the product and goal.',
       ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
-      const apiProductImgs = productImgs.slice(0, generateMode === 'Multi Concept' ? 1 : 2)
+      const apiProductImgs = productImgs.slice(0, 1)
       const imagePayloadBytes = apiProductImgs.reduce((sum, img) => sum + dataUrlBytes(img), 0)
       if (imagePayloadBytes > 2.4 * 1024 * 1024) {
         const err = new Error('업로드한 이미지가 너무 큽니다. 더 작은 이미지를 업로드하거나 자동 압축을 사용해주세요.')
@@ -1924,6 +1949,7 @@ export default function App() {
         buyingMotivation,
         productBenefits,
         productFeatures,
+        focusPoints,
         brandTone: [brandToneInput, brandToneDetail.trim()].filter(Boolean),
         differentiation: quiz.differentiator,
         generationGoal,
@@ -1939,6 +1965,7 @@ export default function App() {
         buyingMotivation,
         productBenefits,
         productFeatures,
+        focusPoints: focusPoints.join(', '),
         differentiation: quiz.differentiator,
         brandTone: [brandToneInput, brandToneDetail.trim()].filter(Boolean).join(' - '),
         referenceUrl,
@@ -1954,12 +1981,13 @@ export default function App() {
         const variant = manualSectionSelection ? (availableTemplates[i % availableTemplates.length] || templateVariant) : 'AI-selected per section'
         const concept = CONCEPT_DIRECTIONS[i] || CONCEPT_DIRECTIONS[0]
         const optionPrompt = optionCount === 1
-          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 complete full section set with one coherent copy direction and one practical image direction. Generate the full flow from Hero to CTA. Use only 1-2 representative image directions; remaining sections can use upload slots or placeholders to control cost.\nProduct Photo Policy: ${hasImgs ? 'Analyze uploaded reference photos to infer product category, product use, buying context, and realistic usage scenes. Do not reuse the uploaded image as the final creative by default. Create new advertising image directions for each section while preserving product identity. The user can choose Keep Original later if they want the original upload used as-is.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
+          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 complete Amazon A+ full section set using this baseline: Hero, Benefit, Feature, Lifestyle, Trust, CTA. Add FAQ, Comparison, or Brand Story only when the product truly needs it. Generate image directions only for Hero, Benefit, Feature, Lifestyle, and CTA so the maximum generated image count is 5.\nProduct Photo Policy: ${hasImgs ? 'Analyze uploaded reference photos to infer product category, product use, buying context, and realistic usage scenes. Do not reuse the uploaded image as the final creative by default. Create new advertising image directions per section while preserving product identity. The user can choose Keep Original later if they want the original upload used as-is.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
           : `${userPrompt}
 
 Design Generation Mode: Multi Concept
 ${concept.label} - ${concept.name}
 - Generate one complete full section set for this concept, from Hero to CTA.
+- Initial image generation for Multi Concept is Hero only for each option. Other section image prompts may be planned but should be generated after a concept is chosen.
 - Choose a section flow that fits this concept, the product category, platform, goal, and tone.
 - Layout Direction: ${concept.layout}
 - Copy Direction: ${concept.copy}
@@ -2006,9 +2034,14 @@ This concept must differ from the other options in section flow and at least one
           }))
         })
         if (autoGenerateImages) {
-          const imageTargets = generateAllSectionImages
-            ? parsed
-            : parsed.map(s => (s.sectionSetPosition <= 2 ? s : { ...s, imagePrompt: '' }))
+          const fastTargets = parsed
+            .filter(s => shouldGenerateFastDraftImage(s))
+            .slice(0, 5)
+          const multiTargets = parsed
+            .filter(s => s.sectionSetPosition === 1)
+            .slice(0, 3)
+          const allowedImageIds = new Set((generateMode === 'Multi Concept' ? multiTargets : fastTargets).map(s => s._id))
+          const imageTargets = parsed.map(s => allowedImageIds.has(s._id) ? s : { ...s, imagePrompt: '' })
           const generated = await generateSectionImages(imageTargets, setImageGenStatus, {
             ...reflectionContext,
             sectionType: 'Full Section Set',
@@ -2152,7 +2185,7 @@ This concept must differ from the other options in section flow and at least one
                 {PRODUCT_CATEGORIES.map(cat => {
                   const on = productCategory === cat
                   return (
-                    <button key={cat} onClick={() => { setProductCategory(cat); setProductSubCategory('') }}
+                    <button key={cat} onClick={() => { setProductCategory(cat); setProductSubCategory(''); setFocusPoints([]) }}
                       style={{ padding:'9px 10px', borderRadius:9, border:`1.5px solid ${isMissing('productCategory') ? '#EF4444' : (on ? '#1D6B45' : C.bd)}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.tx, fontSize:11.5, fontWeight:on?800:650, cursor:'pointer', textAlign:'left' }}>
                       {CATEGORY_LABELS[cat] || cat}
                     </button>
@@ -2185,12 +2218,12 @@ This concept must differ from the other options in section flow and at least one
               />
             </SubQ>
 
-            <SubQ label="제품 사진 (선택, 최대 5장)">
+            <SubQ label="제품 사진 (선택, 최대 3장)">
               <input ref={imgUploadRef} type="file" accept="image/*" multiple onChange={handleProductImgs} style={{ display: 'none' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={() => imgUploadRef.current?.click()} disabled={productImgs.length >= 5}
-                  style={{ padding: '5px 12px', fontSize: 11, borderRadius: 7, border: `1px solid ${C.bd}`, background: C.sur, color: productImgs.length >= 5 ? C.fa : C.mu, cursor: productImgs.length >= 5 ? 'not-allowed' : 'pointer', fontWeight: 600 }}>
-                  📷 사진 추가 ({productImgs.length}/5)
+                <button onClick={() => imgUploadRef.current?.click()} disabled={productImgs.length >= 3}
+                  style={{ padding: '5px 12px', fontSize: 11, borderRadius: 7, border: `1px solid ${C.bd}`, background: C.sur, color: productImgs.length >= 3 ? C.fa : C.mu, cursor: productImgs.length >= 3 ? 'not-allowed' : 'pointer', fontWeight: 600 }}>
+                  📷 사진 추가 ({productImgs.length}/3)
                 </button>
                 {productImgs.map((img, i) => (
                   <div key={i} style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
@@ -2328,6 +2361,19 @@ This concept must differ from the other options in section flow and at least one
                 style={{ width: '100%', padding: '10px 13px', border: fieldBorder('buyingMotivation'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
+            <SubQ label="가장 강조할 요소">
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {(CATEGORY_FOCUS_OPTIONS[productCategory] || CATEGORY_FOCUS_OPTIONS.Other).map(opt => {
+                  const on = focusPoints.includes(opt)
+                  return (
+                    <button key={opt} onClick={() => setFocusPoints(p => on ? p.filter(x => x !== opt) : [...p, opt])}
+                      style={{ padding:'6px 10px', borderRadius:999, border:`1px solid ${on ? '#1D6B45' : C.bd}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                      {on ? '✓ ' : ''}{opt}
+                    </button>
+                  )
+                })}
+              </div>
+            </SubQ>
             <SubQ label={categoryQuestions.productBenefits}>
               <textarea value={productBenefits} onChange={e => setProductBenefits(e.target.value)}
                 placeholder="전환에 중요한 benefit을 적어주세요."
@@ -2407,13 +2453,10 @@ This concept must differ from the other options in section flow and at least one
               )}
             </SubQ>
             <SubQ label="이미지 비용 관리">
-              <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
-                <input type="checkbox" checked={generateAllSectionImages} onChange={e => setGenerateAllSectionImages(e.target.checked)} style={{ width:16, height:16, accentColor:'#1D6B45' }} />
-                모든 Amazon A+ 모듈 이미지를 생성합니다
-              </label>
-              <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
-                기본값은 꺼짐입니다. 비용 절약을 위해 대표 이미지만 생성하고 나머지는 업로드 슬롯 또는 플레이스홀더로 처리합니다.
-              </p>
+              <div style={{ padding:'9px 11px', background:C.alt, border:`1px solid ${C.bd}`, borderRadius:9, fontSize:11.5, color:C.mu, lineHeight:1.6 }}>
+                Fast Draft는 Hero, Benefit, Feature, Lifestyle, CTA 이미지 최대 5장만 생성합니다.<br />
+                Multi Concept는 초기에는 Hero 이미지 3안만 생성하고, 선택 후 필요한 섹션은 오른쪽 편집 패널의 재생성 버튼으로 추가 생성합니다.
+              </div>
             </SubQ>
             <SubQ label="Advanced Debug Mode">
               <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
