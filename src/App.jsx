@@ -542,13 +542,22 @@ function AddBetweenHover({ onClick, loading }) {
 }
 
 /* ── Canva 우측 편집 패널 ────────────────────────────── */
-function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, onAddOverlay, onAddSection, dlAll, onDlAll, onDlSection }) {
+function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, onAddOverlay, onAddSection, dlAll, onDlAll, onDlSection, onKeepOriginal, onRegenerateImage, onUploadImage, imageBusy }) {
   const panelStyle = { width:'100%', height:'calc(100vh - 52px)', background:'#fff', boxShadow:'-4px 0 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', overflow:'hidden' }
+  const uploadRef = useRef(null)
+  const handleUpload = e => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    const fr = new FileReader()
+    fr.onload = ev => onUploadImage?.(ev.target.result)
+    fr.readAsDataURL(f)
+    e.target.value = ''
+  }
 
   if (sec === null || idx === null) {
     return (
       <div style={{ ...panelStyle, alignItems:'center', justifyContent:'center', gap:12 }}>
-        <p style={{ fontSize:12, color:C.mu, textAlign:'center', lineHeight:1.8, margin:0, padding:'0 24px' }}>섹션을 클릭해서<br/>편집하세요</p>
+        <p style={{ fontSize:12, color:C.mu, textAlign:'center', lineHeight:1.8, margin:0, padding:'0 24px' }}>왼쪽 시안의 섹션을 선택해서<br/>텍스트와 이미지를 수정하세요.</p>
         {onAddSection && (
           <button onClick={onAddSection}
             style={{ padding:'8px 20px', fontSize:12, fontWeight:700, borderRadius:8, border:'1.5px dashed #10b981', background:'#f0fdf4', color:'#059669', cursor:'pointer', marginTop:8 }}>
@@ -600,12 +609,29 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
       <div style={{ padding:'10px 14px', borderBottom:`1px solid ${C.bd}`, background:'#F8FAFF', flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:7 }}>
           <div style={{ width:8, height:8, borderRadius:'50%', background:'#3b82f6', flexShrink:0 }} />
-          <span style={{ fontSize:12, fontWeight:700, color:'#1E40AF' }}>S{idx+1} · {sec.sectionType}</span>
+          <span style={{ fontSize:12, fontWeight:700, color:'#1E40AF' }}>S{idx+1} · 편집 패널</span>
         </div>
       </div>
 
       {/* 스크롤 컨트롤 영역 */}
       <div style={{ flex:1, overflowY:'auto', padding:'8px 12px 10px' }}>
+
+        <p style={sLabel}>이미지</p>
+        <input ref={uploadRef} type="file" accept="image/*" onChange={handleUpload} style={{ display:'none' }} />
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5, marginBottom:10 }}>
+          <button onClick={onKeepOriginal} disabled={!sec.originalProductImage}
+            style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:`1.5px solid ${sec.originalProductImage ? '#1D6B45' : C.bd}`, background:sec.originalProductImage?'#F0FDF4':C.alt, color:sec.originalProductImage?'#1D6B45':C.fa, cursor:sec.originalProductImage?'pointer':'not-allowed', fontWeight:700 }}>
+            원본 유지
+          </button>
+          <button onClick={onRegenerateImage} disabled={imageBusy}
+            style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:'1.5px solid #3b82f6', background:'#EFF6FF', color:'#1d4ed8', cursor:imageBusy?'wait':'pointer', fontWeight:700 }}>
+            {imageBusy ? '생성 중' : '재생성'}
+          </button>
+          <button onClick={() => uploadRef.current?.click()}
+            style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>
+            새 이미지
+          </button>
+        </div>
 
         {/* 레이아웃 */}
         <p style={sLabel}>레이아웃</p>
@@ -923,9 +949,7 @@ async function generateSectionImages(sections, onProgress, context = {}) {
         size: '1024x1536',
         quality: 'medium',
       })
-      next[idx] = context.uploadedProductPhoto
-        ? { ...next[idx], secImg2: image, imageStatus: 'support-generated' }
-        : { ...next[idx], secImg: image, imageStatus: 'generated' }
+      next[idx] = { ...next[idx], secImg: image, imageStatus: 'generated-ad-image' }
     } catch (e) {
       next[idx] = { ...next[idx], imageStatus: 'failed', imageError: e.message }
       console.error(e)
@@ -951,7 +975,7 @@ function strengthenImagePrompt(prompt, { productName, productCategory, sectionTy
     `SECTION CONTEXT: ${sectionType}.`,
     imageStrategy ? `IMAGE STRATEGY: ${imageStrategy}.` : '',
     uploadedProductPhoto
-      ? 'Use the uploaded product photo as the main product truth. Do not redesign the product. Generate only supporting imagery such as background, lifestyle context, close-up environment, detail surface, or scene direction that can be combined with the uploaded product photo.'
+      ? 'Analyze the uploaded reference photo to understand the product category, product use, buying context, and realistic usage scenes. Do not simply reuse the uploaded image as-is. Create a new commercial advertising image appropriate for this section while preserving the real product identity and avoiding unrelated objects.'
       : 'If exact product appearance is uncertain, create a realistic placeholder composition and leave room to replace with the real product photo.',
     'Before rendering, verify the scene clearly shows the correct product category and not an unrelated object.',
     prompt,
@@ -999,6 +1023,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
   })
   const [activeField,  setActiveField]  = useState(null)
   const [activeOverlay,setActiveOverlay]= useState(null)
+  const [imageBusyIdx, setImageBusyIdx] = useState(null)
   const sectsInit = useRef(false)
 
   useEffect(() => {
@@ -1055,6 +1080,41 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
     setActiveOverlay(id)
     setActiveField(null)
   }, [selectedIdx, sects, upd])
+
+  const keepOriginalImage = useCallback(() => {
+    if (selectedIdx === null) return
+    const sec = sects[selectedIdx]
+    const original = sec.originalProductImage || sec.uploadedProductPhotos?.[0]
+    if (!original) return
+    upd(selectedIdx, { ...sec, secImg: original, imageStatus: 'kept-original', productPhotoMode: 'keep-original' })
+  }, [selectedIdx, sects, upd])
+
+  const uploadSectionImage = useCallback((dataUrl) => {
+    if (selectedIdx === null || !dataUrl) return
+    const sec = sects[selectedIdx]
+    upd(selectedIdx, { ...sec, secImg: dataUrl, imageStatus: 'uploaded-new', productPhotoMode: 'uploaded-new-image' })
+  }, [selectedIdx, sects, upd])
+
+  const regenerateSectionImage = useCallback(async () => {
+    if (selectedIdx === null) return
+    const sec = sects[selectedIdx]
+    setImageBusyIdx(selectedIdx)
+    try {
+      const prompt = strengthenImagePrompt(sec.imagePrompt || `${sec.sectionType || 'Amazon A+ module'} commercial advertising image for ${productInput || 'the product'}`, {
+        productName: productInput,
+        productCategory: sec.sectionType,
+        sectionType: sec.sectionType,
+        uploadedProductPhoto: !!(sec.originalProductImage || sec.uploadedProductPhotos?.length),
+        imageStrategy: sec.imageStrategy,
+      })
+      const image = await generateImage({ prompt, size: '1024x1536', quality: 'medium' })
+      upd(selectedIdx, { ...sec, secImg: image, imageStatus: 'regenerated-ad-image', productPhotoMode: 'ai-regenerated' })
+    } catch (e) {
+      upd(selectedIdx, { ...sec, imageStatus: 'failed', imageError: e.message })
+    } finally {
+      setImageBusyIdx(null)
+    }
+  }, [selectedIdx, sects, upd, productInput])
 
   const dlAllPNG = async () => {
     setDlAll(true)
@@ -1181,7 +1241,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
 
       {sects.length > 0 && (
         <div style={{ background:'#F5F2ED', paddingTop:32, paddingBottom:60 }}>
-          <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 12px' }}>
+          <div style={{ maxWidth:1480, margin:'0 auto', padding:'0 12px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:16 }}>
               <div>
                 <div style={{ fontSize:12, fontWeight:800, color:C.tx }}>Amazon A+ 납품 시안</div>
@@ -1192,6 +1252,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                 {dlAll ? '다운로드 중...' : 'PNG 전체 다운로드'}
               </button>
             </div>
+            <div style={{ display:'flex', alignItems:'flex-start', gap:18 }}>
             {/* 캔버스 */}
             <div style={{ flex:1, minWidth:0 }}
               onClick={() => setSelectedIdx(null)}
@@ -1204,14 +1265,18 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                   <SectionEditor
                     key={s._id || i}
                     sec={s} idx={i} onUpdate={upd}
-                    isSelected={false}
-                    previewOnly
+                    isSelected={selectedIdx === i}
+                    onSelect={selectSection}
+                    activeField={selectedIdx === i ? activeField : null}
+                    onActiveFieldChange={f => { setActiveField(f); setActiveOverlay(null) }}
+                    activeOverlay={selectedIdx === i ? activeOverlay : null}
+                    onActiveOverlayChange={id => { setActiveOverlay(id); setActiveField(null) }}
                   />
                 ))}
               </div>
             </div>
             {/* 스티키 편집 패널 */}
-            {false && <div style={{ width:340, flexShrink:0, position:'sticky', top:52, alignSelf:'flex-start' }}>
+            <div style={{ width:340, flexShrink:0, position:'sticky', top:52, alignSelf:'flex-start' }}>
               <CanvaPanel
                 sec={selectedIdx !== null ? sects[selectedIdx] : null}
                 idx={selectedIdx}
@@ -1224,8 +1289,13 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                 dlAll={dlAll}
                 onDlAll={dlAllPNG}
                 onDlSection={dlSectionPNG}
+                onKeepOriginal={keepOriginalImage}
+                onRegenerateImage={regenerateSectionImage}
+                onUploadImage={uploadSectionImage}
+                imageBusy={imageBusyIdx === selectedIdx}
               />
-            </div>}
+            </div>
+            </div>
           </div>
         </div>
       )}
@@ -1236,7 +1306,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
-      {false && addModal !== null && (
+      {addModal !== null && (
         <div onClick={() => setAddModal(null)}
           style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div onClick={e => e.stopPropagation()}
@@ -1261,7 +1331,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
-      {false && deleteConfirm !== null && (
+      {deleteConfirm !== null && (
         <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div style={{ background:'#fff', borderRadius:14, padding:'28px 32px', maxWidth:320, width:'90%', boxShadow:'0 20px 60px rgba(0,0,0,0.3)', textAlign:'center' }}>
             <p style={{ fontSize:15, fontWeight:600, color:C.tx, margin:'0 0 6px' }}>섹션을 삭제하시겠습니까?</p>
@@ -1610,7 +1680,7 @@ export default function App() {
         const variant = manualSectionSelection ? (availableTemplates[i % availableTemplates.length] || templateVariant) : 'AI-selected per section'
         const concept = CONCEPT_DIRECTIONS[i] || CONCEPT_DIRECTIONS[0]
         const optionPrompt = optionCount === 1
-          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 complete full section set with one coherent copy direction and one practical image direction. Generate the full flow from Hero to CTA. Use only 1-2 representative image directions; remaining sections can use upload slots or placeholders to control cost.\nProduct Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
+          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 complete full section set with one coherent copy direction and one practical image direction. Generate the full flow from Hero to CTA. Use only 1-2 representative image directions; remaining sections can use upload slots or placeholders to control cost.\nProduct Photo Policy: ${hasImgs ? 'Analyze uploaded reference photos to infer product category, product use, buying context, and realistic usage scenes. Do not reuse the uploaded image as the final creative by default. Create new advertising image directions for each section while preserving product identity. The user can choose Keep Original later if they want the original upload used as-is.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
           : `${userPrompt}
 
 Design Generation Mode: Multi Concept
@@ -1621,11 +1691,11 @@ ${concept.label} - ${concept.name}
 - Copy Direction: ${concept.copy}
 - Image Direction: ${concept.image}
 - Template Selection: ${variant}
-- Product Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}
+- Product Photo Policy: ${hasImgs ? 'Analyze uploaded reference photos to infer product category, product use, buying context, and realistic usage scenes. Do not reuse the uploaded image as the final creative by default. Create new advertising image directions for each section while preserving product identity. The user can choose Keep Original later if they want the original upload used as-is.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}
 
 This concept must differ from the other options in section flow and at least one of: Layout, Copy, or Image Style.`
         const optionText = await generateContent({
-          systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }) + (hasImgs ? '\n\nUploaded product photos are the source of truth. Analyze the uploaded images and preserve the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign or invent a different product. Use AI-generated imagery for backgrounds, lifestyle scenes, close-up context, supporting detail shots, or product-photo placement direction.' : ''),
+          systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }) + (hasImgs ? '\n\nUploaded product photos are references for analysis, not default final assets. Analyze them to understand product category, product use, buying context, and usage scene. Generate new commercial advertising image plans per section while preserving product identity and avoiding unrelated objects. If the user later chooses Keep Original, the uploaded image can be used as-is.' : ''),
           userPrompt: optionPrompt,
           images: hasImgs ? apiProductImgs : [],
           model: 'gpt-4o',
@@ -1653,10 +1723,11 @@ This concept must differ from the other options in section flow and at least one
             canvas: { preset: sizePreset, ...preset },
             imageStrategy: generateMode === 'Multi Concept'
               ? `${concept.label} - ${concept.name}: ${concept.image}`
-              : 'Fast Draft: one practical commercial product image direction, using uploaded product photos as source of truth when provided.',
-            secImg: productImgs[0] || s.secImg,
+              : 'Fast Draft: one practical commercial advertising image direction. Analyze uploaded reference photos for category, product use, buying context, and usage scene when provided.',
+            secImg: s.secImg,
+            originalProductImage: productImgs[0] || null,
             uploadedProductPhotos: productImgs,
-            productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
+            productPhotoMode: productImgs[0] ? 'ai-generated-from-reference' : 'replace-with-real-product-photo',
           }))
         })
         if (autoGenerateImages) {

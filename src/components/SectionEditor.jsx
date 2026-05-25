@@ -135,7 +135,6 @@ export default function SectionEditor({
   previewOnly = false,
 }) {
   const [scale,   setScale]   = useState(1)
-  const [secMeta, setSecMeta] = useState({})
   const [hovered, setHovered] = useState(false)
   const ref     = useRef(null)
   const wrapRef = useRef(null)
@@ -176,8 +175,13 @@ export default function SectionEditor({
 
   const baseT = DS[sec.designStyle] || Object.values(DS)[0]
   const t     = { ...baseT, ...(sec.customColors || {}) }
+  const secMeta = sec.imageMeta || {}
 
   const change     = (key, val) => onUpdate(idx, { ...sec, [key]: val })
+  const updateImageMeta = (key, val) => onUpdate(idx, {
+    ...sec,
+    imageMeta: { ...(sec.imageMeta || {}), [key]: val },
+  })
   const updOverlay = updated   => onUpdate(idx, {
     ...sec,
     overlayTexts: (sec.overlayTexts || []).map(ot => ot.id === updated.id ? updated : ot),
@@ -234,7 +238,7 @@ export default function SectionEditor({
               <Tpl
                 s={sec} img={img} t={t} editing={!previewOnly} onChange={change}
                 secMeta={secMeta}
-                onSecMeta={(key,val) => setSecMeta(p => ({...p,[key]:val}))}
+                onSecMeta={updateImageMeta}
                 onFieldFocus={f => { onActiveFieldChange?.(f); onActiveOverlayChange?.(null) }}
               />
             </div>
