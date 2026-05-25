@@ -30,6 +30,28 @@ const PLANNING_STYLES = [
 const BRAND_TONES = ['따뜻한/감성적', '신뢰감/전문적', '힙/트렌디', '레트로/빈티지', '유머/B급', '고급스러운', '친근한/편안한']
 const EMPHASIS_POINTS = ['품질/성능', '원산지/성분', '가격/가성비', '편의성', '브랜드스토리', '인증/수상', '환경/윤리', '디자인/패키지']
 
+const PLATFORMS = ['Amazon A+', 'Shopify']
+const SECTION_MODES = ['Static Section', 'Interactive Section']
+const STATIC_SECTION_TYPES = ['Hero Banner', 'Feature Section', 'Benefit Section', 'Comparison Section', 'Lifestyle Section', 'Trust Section', 'FAQ Section', 'Brand Story Section', 'CTA Section']
+const INTERACTIVE_SECTION_TYPES = ['How It Works Section', 'Accordion Section', 'Carousel Section', 'Before After Section', 'Review Slider Section', 'Feature Tabs Section']
+const TEMPLATE_LIBRARY = {
+  'Hero Banner': ['hero_01', 'hero_02', 'hero_03', 'hero_04', 'hero_05'],
+  'Feature Section': ['feature_01', 'feature_02', 'feature_03'],
+  'Benefit Section': ['benefit_01', 'benefit_02', 'benefit_03', 'benefit_04', 'benefit_05'],
+  'Comparison Section': ['compare_01', 'compare_02', 'compare_03'],
+  'Lifestyle Section': ['lifestyle_01', 'lifestyle_02'],
+  'Trust Section': ['trust_01', 'trust_02'],
+  'FAQ Section': ['faq_static_01', 'faq_static_02'],
+  'Brand Story Section': ['brand_story_01', 'brand_story_02'],
+  'CTA Section': ['cta_01', 'cta_02'],
+  'How It Works Section': ['how_it_works_01', 'step_navigation_01'],
+  'Accordion Section': ['accordion_01', 'accordion_02'],
+  'Carousel Section': ['carousel_01', 'lifestyle_gallery_01'],
+  'Before After Section': ['before_after_01'],
+  'Review Slider Section': ['review_slider_01'],
+  'Feature Tabs Section': ['feature_tabs_01', 'tabs_01'],
+}
+
 const EMPTY_QUIZ = {
   category: '', priceRange: '',
   gender: '', ageGroup: '', purchaseSituation: '',
@@ -761,7 +783,7 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
                         {Object.entries(sp).map(([k, v], j) => <div key={j} style={{ fontSize: 12, color: C.tx, marginBottom: 3 }}><span style={{ color: C.mu, fontWeight: 600 }}>{k}:</span> {v}</div>)}
                       </div>
                     )}
-                    {s.imagePrompt && (
+                    {false && s.imagePrompt && (
                       <>
                         <div style={{ background: '#111', borderRadius: 7, padding: '9px 12px', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                           <code style={{ fontSize: 11, color: '#D4D4D4', fontFamily: "'Courier New',monospace", lineHeight: 1.7, flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{s.imagePrompt}</code>
@@ -882,6 +904,16 @@ export default function App() {
   const [tone, setTone] = useState('생활형')
   const [tabLoading, setTabLoading] = useState({})
   const [error, setError] = useState('')
+  const [productName, setProductName] = useState('')
+  const [platform, setPlatform] = useState('Amazon A+')
+  const [sectionMode, setSectionMode] = useState('Static Section')
+  const [sectionType, setSectionType] = useState('Hero Banner')
+  const [templateVariant, setTemplateVariant] = useState('hero_01')
+  const [targetCustomer, setTargetCustomer] = useState('')
+  const [customerPainPoint, setCustomerPainPoint] = useState('')
+  const [buyingMotivation, setBuyingMotivation] = useState('')
+  const [productBenefits, setProductBenefits] = useState('')
+  const [productFeatures, setProductFeatures] = useState('')
 
   // 새로고침 시 전체 초기화
   useEffect(() => {
@@ -907,15 +939,30 @@ export default function App() {
     try { localStorage.setItem('cos_quiz', JSON.stringify(quiz)) } catch {}
   }, [quiz])
 
-  // 단계 완료 여부
-  const step1Done = !!(sharedInput.trim() && quiz.category && quiz.priceRange)
-  const step2Done = !!(quiz.gender && quiz.ageGroup && quiz.purchaseSituation)
-  const step3Done = !!(quiz.pricePosition && quiz.competition)
-  const step4Done = !!(quiz.differentiator.trim())
-  const step5Done = !!(quiz.planningStyle)
-  const step6Done = quiz.brandTone.length > 0
-  const step7Done = quiz.emphasis.length > 0
-  const allDone = step1Done && step2Done && step3Done && step4Done && step5Done && step6Done && step7Done
+  const availableSectionTypes = sectionMode === 'Interactive Section' ? INTERACTIVE_SECTION_TYPES : STATIC_SECTION_TYPES
+  const availableTemplates = TEMPLATE_LIBRARY[sectionType] || ['custom_01']
+
+  useEffect(() => {
+    if (!availableSectionTypes.includes(sectionType)) {
+      const nextType = availableSectionTypes[0]
+      setSectionType(nextType)
+      setTemplateVariant((TEMPLATE_LIBRARY[nextType] || ['custom_01'])[0])
+    }
+  }, [sectionMode]) // eslint-disable-line
+
+  useEffect(() => {
+    const templates = TEMPLATE_LIBRARY[sectionType] || ['custom_01']
+    if (!templates.includes(templateVariant)) setTemplateVariant(templates[0])
+  }, [sectionType]) // eslint-disable-line
+
+  const step1Done = !!(productName.trim() && sharedInput.trim())
+  const step2Done = !!(platform && sectionMode)
+  const step3Done = !!(sectionType && templateVariant)
+  const step4Done = true
+  const step5Done = true
+  const step6Done = true
+  const step7Done = true
+  const allDone = step1Done && step2Done && step3Done
 
   // 탭별 결과
   const [tabResults, setTabResults] = useState(() => {
@@ -1018,7 +1065,17 @@ export default function App() {
   }
 
   const resetAll = () => {
+    setProductName('')
     setSharedInput('')
+    setPlatform('Amazon A+')
+    setSectionMode('Static Section')
+    setSectionType('Hero Banner')
+    setTemplateVariant('hero_01')
+    setTargetCustomer('')
+    setCustomerPainPoint('')
+    setBuyingMotivation('')
+    setProductBenefits('')
+    setProductFeatures('')
     setQuiz({ ...EMPTY_QUIZ })
     setProductImgs([])
     const empty = {}
@@ -1042,11 +1099,30 @@ export default function App() {
     saveResult(tid, '')
     setError('')
     try {
-      const userPrompt = (tid === 'blog' && keywordContext)
-        ? `다음 키워드를 자연스럽게 포함하고, 아래 내용을 참고해서 블로그 글을 작성해줘.\n키워드: ${keywordContext}\n참고 내용: ${sharedInput.trim()}`
-        : sharedInput.trim()
+      const userPrompt = [
+        `Product Name: ${productName.trim()}`,
+        `Product Description: ${sharedInput.trim()}`,
+        targetCustomer && `Target Customer: ${targetCustomer.trim()}`,
+        customerPainPoint && `Customer Pain Point: ${customerPainPoint.trim()}`,
+        buyingMotivation && `Buying Motivation: ${buyingMotivation.trim()}`,
+        productBenefits && `Product Benefits: ${productBenefits.trim()}`,
+        productFeatures && `Product Features: ${productFeatures.trim()}`,
+        quiz.differentiator && `Differentiation: ${quiz.differentiator.trim()}`,
+      ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
-      const quizOpts = { ...quiz }
+      const quizOpts = {
+        ...quiz,
+        platform,
+        sectionMode,
+        sectionType,
+        templateVariant,
+        targetCustomer,
+        customerPainPoint,
+        buyingMotivation,
+        productBenefits,
+        productFeatures,
+        differentiation: quiz.differentiator,
+      }
       const sysBase = getSys(tid, tone, quizOpts)
       const systemPrompt = hasImgs
         ? sysBase + '\n\n업로드된 제품 사진을 분석해서 제품의 외형·색상·패키지 디자인을 파악하고, 각 섹션 AI프롬프트에 실제 제품의 시각적 특성(색상, 형태, 질감, 소재감)을 구체적으로 반영해줘.'
@@ -1160,20 +1236,27 @@ export default function App() {
           {/* 타이틀 (클릭 시 전체 리셋) */}
           <div onClick={resetAll} onMouseEnter={() => setTitleHover(true)} onMouseLeave={() => setTitleHover(false)}
             style={{ textAlign: 'center', marginBottom: 32, cursor: 'pointer', opacity: titleHover ? 0.6 : 1, transition: 'opacity .15s' }}>
-            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>제품 정보 하나로 마케팅 콘텐츠 완성</h1>
-            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>7단계 입력 → 상세페이지 · 블로그 · 카드뉴스 자동 생성</p>
+            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>AI Commerce Section Builder</h1>
+            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>Amazon A+ static sections and Shopify interactive sections</p>
           </div>
 
-          {/* ── STEP 1: 제품 기본 정보 ── */}
-          <StepCard stepNum={1} label="제품 기본 정보" done={step1Done}>
-            <SubQ label="제품 정보 (필수) — 제품명, 특징, 가격, 판매 정보 등 자유롭게">
+          {/* ── STEP 1: Product basics ── */}
+          <StepCard stepNum={1} label="Product Basics" done={step1Done}>
+            <SubQ label="Product Name">
+              <input value={productName} onChange={e => setProductName(e.target.value)}
+                placeholder="예) 제주 애플망고 / Ceramic pour-over set / Hydrating face serum"
+                style={{ width: '100%', padding: '12px 14px', border: `1.5px solid ${productName.trim() ? C.bd : '#FECACA'}`, borderRadius: 10, outline: 'none', fontSize: 14, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+
+            <SubQ label="Product Description">
               <textarea ref={taRef} value={sharedInput} onChange={e => setSharedInput(e.target.value)}
-                placeholder="예) 듀라론 냉감패드 — 3중 레이어 구조, 여름 특화, 19,900원, 싱글/더블/퀸 사이즈"
+                placeholder="제품 특징, 소재, 가격대, 고객, 차별점, 사용 상황을 자유롭게 적어주세요."
                 style={{ width: '100%', minHeight: 120, padding: '12px 14px', border: `1.5px solid ${sharedInput.trim() ? C.bd : '#FECACA'}`, borderRadius: 10, outline: 'none', resize: 'none', fontSize: 14, lineHeight: 1.85, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
               />
             </SubQ>
 
-            <SubQ label="제품 사진 업로드 (선택, 최대 5장) — AI 이미지 프롬프트 정확도 향상">
+            <SubQ label="Product Photos (optional, up to 5)">
               <input ref={imgUploadRef} type="file" accept="image/*" multiple onChange={handleProductImgs} style={{ display: 'none' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <button onClick={() => imgUploadRef.current?.click()} disabled={productImgs.length >= 5}
@@ -1190,7 +1273,7 @@ export default function App() {
               </div>
             </SubQ>
 
-            <SubQ label="AI 이미지 생성">
+            <SubQ label="AI Image Generation">
               <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer', userSelect:'none' }}>
                 <input
                   type="checkbox"
@@ -1198,60 +1281,78 @@ export default function App() {
                   onChange={e => setAutoGenerateImages(e.target.checked)}
                   style={{ width:16, height:16, accentColor:'#1D6B45' }}
                 />
-                상세페이지 섹션 이미지를 자동 생성해서 배치
+                Generate supporting section images automatically
               </label>
               <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
-                내부 프롬프트를 사용해 생성하며, 사용자 화면에는 프롬프트를 직접 노출하지 않습니다.
+                Prompts stay internal. Uploaded product photos remain the source of product truth.
               </p>
             </SubQ>
+          </StepCard>
 
-            <SubQ label="카테고리">
-              <OptionBtns options={CATEGORIES} value={quiz.category} onChange={v => updQuiz('category', v)} />
+          {/* ── STEP 2: Platform and section mode ── */}
+          <StepCard stepNum={2} label="Platform & Section Mode" done={step2Done}>
+            <SubQ label="Platform">
+              <OptionBtns options={PLATFORMS} value={platform} onChange={setPlatform} />
             </SubQ>
-
-            <SubQ label="가격대">
-              <OptionBtns options={PRICE_RANGES} value={quiz.priceRange} onChange={v => updQuiz('priceRange', v)} />
+            <SubQ label="Section Type Mode">
+              <OptionBtns options={SECTION_MODES} value={sectionMode} onChange={setSectionMode} />
+              <p style={{ margin:'8px 0 0', fontSize:11, color:C.fa, lineHeight:1.65 }}>
+                Static Section is optimized for Amazon A+ PNG export. Interactive Section is designed for Shopify blocks such as tabs, accordion, carousel, and step navigation.
+              </p>
             </SubQ>
           </StepCard>
 
-          {/* ── STEP 2: 타겟 고객 ── */}
-          <StepCard stepNum={2} label="타겟 고객" done={step2Done}>
-            <SubQ label="주 구매 성별">
-              <OptionBtns options={GENDERS} value={quiz.gender} onChange={v => updQuiz('gender', v)} />
+          {/* ── STEP 3: Section and template ── */}
+          <StepCard stepNum={3} label="Section & Template" done={step3Done}>
+            <SubQ label="Section">
+              <OptionBtns options={availableSectionTypes} value={sectionType} onChange={setSectionType} />
             </SubQ>
-            <SubQ label="주 구매 연령대">
-              <OptionBtns options={AGE_GROUPS} value={quiz.ageGroup} onChange={v => updQuiz('ageGroup', v)} />
-            </SubQ>
-            <SubQ label="구매 상황">
-              <OptionBtns options={PURCHASE_SITUATIONS} value={quiz.purchaseSituation} onChange={v => updQuiz('purchaseSituation', v)} />
+            <SubQ label="Template">
+              <OptionBtns options={availableTemplates} value={templateVariant} onChange={setTemplateVariant} />
             </SubQ>
           </StepCard>
 
-          {/* ── STEP 3: 시장 포지셔닝 ── */}
-          <StepCard stepNum={3} label="시장 포지셔닝" done={step3Done}>
-            <SubQ label="가격 포지션">
-              <OptionBtns options={PRICE_POSITIONS} value={quiz.pricePosition} onChange={v => updQuiz('pricePosition', v)} />
-            </SubQ>
-            <SubQ label="경쟁 상황">
-              <OptionBtns options={COMPETITION_TYPES} value={quiz.competition} onChange={v => updQuiz('competition', v)} />
-            </SubQ>
-          </StepCard>
-
-          {/* ── STEP 4: 나만의 차별점 ── */}
-          <StepCard stepNum={4} label="나만의 차별점" done={step4Done}>
-            <SubQ label="핵심 차별점 (필수)">
-              <textarea ref={diffRef} value={quiz.differentiator} onChange={e => updQuiz('differentiator', e.target.value)}
-                placeholder="우리 제품만의 특별한 점을 입력해주세요&#10;예) 국내 유일 48시간 저온 숙성 공법, 농가 직거래 계약 재배, 첨가물 無"
-                style={{ width: '100%', minHeight: 72, padding: '10px 13px', border: `1.5px solid ${quiz.differentiator.trim() ? C.bd : '#FECACA'}`, borderRadius: 10, outline: 'none', resize: 'none', fontSize: 13.5, lineHeight: 1.8, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
+          {/* ── STEP 4: Conversion context ── */}
+          <StepCard stepNum={4} label="Conversion Context" done={step4Done}>
+            <SubQ label="Target Customer">
+              <input value={targetCustomer} onChange={e => setTargetCustomer(e.target.value)}
+                placeholder="예) busy parents, Amazon shoppers comparing premium options"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="차별점 유형 (복수 선택)">
-              <OptionBtns multi options={DIFF_TYPES} value={quiz.differentiatorTypes} onChange={v => updQuiz('differentiatorTypes', v)} />
+            <SubQ label="Customer Pain Point">
+              <input value={customerPainPoint} onChange={e => setCustomerPainPoint(e.target.value)}
+                placeholder="구매자가 해결하고 싶은 불편함"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Buying Motivation">
+              <input value={buyingMotivation} onChange={e => setBuyingMotivation(e.target.value)}
+                placeholder="왜 지금 구매해야 하는지"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Product Benefits">
+              <textarea value={productBenefits} onChange={e => setProductBenefits(e.target.value)}
+                placeholder="전환에 중요한 benefit을 적어주세요."
+                style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Product Features">
+              <textarea value={productFeatures} onChange={e => setProductFeatures(e.target.value)}
+                placeholder="소재, 기능, 구성품, 사양 등 구체적인 feature"
+                style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Differentiation">
+              <textarea ref={diffRef} value={quiz.differentiator} onChange={e => updQuiz('differentiator', e.target.value)}
+                placeholder="경쟁 제품과 다르게 말할 수 있는 사실 기반 차별점"
+                style={{ width: '100%', minHeight: 72, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.8, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
+              />
             </SubQ>
           </StepCard>
 
-          {/* ── STEP 5: 기획 방식 ── */}
-          <StepCard stepNum={5} label="기획 방식 — 섹션 구성 순서 결정" done={step5Done}>
+          {false && <StepCard stepNum={5} label="기획 방식 — 섹션 구성 순서 결정" done={step5Done}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
               {PLANNING_STYLES.map(ps => {
                 const sel = quiz.planningStyle === ps.key
@@ -1264,26 +1365,24 @@ export default function App() {
                 )
               })}
             </div>
-          </StepCard>
+          </StepCard>}
 
-          {/* ── STEP 6: 브랜드 톤 ── */}
-          <StepCard stepNum={6} label="브랜드 톤" done={step6Done}>
+          {false && <StepCard stepNum={6} label="브랜드 톤" done={step6Done}>
             <p style={{ fontSize: 11, color: C.fa, margin: '0 0 8px' }}>최대 2개 선택 ({quiz.brandTone.length}/2)</p>
             <OptionBtns multi maxSelect={2} options={BRAND_TONES} value={quiz.brandTone} onChange={v => updQuiz('brandTone', v)} />
-          </StepCard>
+          </StepCard>}
 
-          {/* ── STEP 7: 강조 포인트 ── */}
-          <StepCard stepNum={7} label="강조 포인트" done={step7Done}>
+          {false && <StepCard stepNum={7} label="강조 포인트" done={step7Done}>
             <p style={{ fontSize: 11, color: C.fa, margin: '0 0 8px' }}>최대 2개 선택 ({quiz.emphasis.length}/2)</p>
             <OptionBtns multi maxSelect={2} options={EMPHASIS_POINTS} value={quiz.emphasis} onChange={v => updQuiz('emphasis', v)} />
-          </StepCard>
+          </StepCard>}
 
-          {/* ── 콘텐츠 유형 선택 + 생성하기 ── */}
+          {/* ── Generate section ── */}
           <div style={{ background: '#EFF6FF', borderRadius: 16, border: `1.5px solid ${allDone ? '#BFDBFE' : '#FECACA'}`, overflow: 'hidden', marginBottom: 12, boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
             <div style={{ padding: '10px 16px', background: '#DBEAFE', borderBottom: '1px solid #BFDBFE' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>콘텐츠 유형 선택</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Commerce Section</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${TASKS.length},1fr)`, gap: 8, padding: '10px 14px', borderBottom: `1px solid ${C.bd}` }}>
+            <div style={{ display: 'none', gridTemplateColumns: `repeat(${TASKS.length},1fr)`, gap: 8, padding: '10px 14px', borderBottom: `1px solid ${C.bd}` }}>
               {TASKS.map(t => {
                 const on = task.id === t.id
                 const hasResult = !!(tabResults[t.id])
@@ -1299,8 +1398,7 @@ export default function App() {
               })}
             </div>
 
-            {/* 블로그 전용 옵션 */}
-            {task.id === 'blog' && (
+            {false && task.id === 'blog' && (
               <div style={{ padding: '12px 16px 8px', borderBottom: `1px solid ${C.bd}`, background: '#F8F8FF' }}>
                 <BlogKeywords onKeywordsChange={setKeywordContext} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
@@ -1319,13 +1417,13 @@ export default function App() {
             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {allDone
-                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ 모든 단계 완료 — 생성하기를 눌러주세요</p>
+                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — generate a {platform} {sectionMode}</p>
                   : <p style={{ fontSize: 11, color: '#EF4444', margin: 0 }}>미완료: {incompletedSteps.join(', ')}</p>
                 }
               </div>
               <button onClick={run} disabled={!allDone || loading}
                 style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: (!allDone || loading) ? '#ECEAE5' : C.tx, color: (!allDone || loading) ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: (!allDone || loading) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
-                {loading ? <><Spin />생성 중…</> : `✦ ${task.label} 생성하기`}
+                {loading ? <><Spin />Generating…</> : `✦ Generate ${sectionType}`}
               </button>
             </div>
           </div>
@@ -1337,7 +1435,7 @@ export default function App() {
           {loading && (
             <div style={{ background: C.sur, borderRadius: 14, border: `1.5px solid ${C.bd}`, padding: '28px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 22, color: C.mu, fontSize: 13 }}>
-                <Spin />{task.id === 'detail' ? (imageGenStatus || '상세페이지 섹션 생성 중…') : task.id === 'card' ? '카드뉴스 5장 생성 중…' : '블로그 포스팅 생성 중…'}
+                <Spin />{imageGenStatus || 'Generating commerce section…'}
               </div>
               {[95, 75, 85, 60, 90, 50].map((w, i) => <div key={i} style={{ height: 10, background: C.alt, borderRadius: 5, width: `${w}%`, marginBottom: 9, animation: `pl 1.5s ease ${i * .12}s infinite` }} />)}
             </div>

@@ -7,9 +7,7 @@ export const C = {
 }
 
 export const TASKS = [
-  { id: 'detail', label: '상세페이지', sub: '기획+섹션카드', icon: '◫', col: '#1D6B45', li: '#E9F7F0' },
-  { id: 'blog',   label: '블로그',     sub: '완성형포스팅',  icon: '✎', col: '#1A3FA3', li: '#EBF1FF' },
-  { id: 'card',   label: '카드뉴스',   sub: '인스타디자인',  icon: '▦', col: '#6D1FA0', li: '#F7EEFF' },
+  { id: 'detail', label: 'Section Builder', sub: 'Amazon / Shopify', icon: '◫', col: '#1D6B45', li: '#E9F7F0' },
 ]
 
 export const BLOG_TONES = ['생활형', '후기형', '공감형', '정보형', '전문가형']
@@ -35,12 +33,24 @@ export const AUTO_DS = {
   '특징 강조': '크림', '사용 상황': '크림', '비교': '크림',
   '추천 대상': '크림', CTA: '크림', '브랜드 스토리': '크림',
   '소재설명': '크림', '인증/수상': '크림', '사용 장면': '크림',
+  'Hero Banner': '프리미엄블랙', 'Feature Section': '크림', 'Benefit Section': '민트',
+  'Comparison Section': '슬레이트', 'Lifestyle Section': '웜베이지',
+  'Trust Section': '딥네이비', 'FAQ Section': '크림', 'Brand Story Section': '올리브',
+  'CTA Section': '프리미엄블랙', 'How It Works Section': '크림',
+  'Accordion Section': '크림', 'Carousel Section': '웜베이지',
+  'Before After Section': '슬레이트', 'Review Slider Section': '크림',
 }
 
 export const AUTO_TPL = {
   HERO: 'fullHero', '문제 공감': 'story', '해결 제안': 'points3icon',
   '특징 강조': 'leftRight', '사용 상황': 'topBottom', '비교': 'compare',
   '추천 대상': 'howTo', CTA: 'fullHero',
+  'Hero Banner': 'fullHero', 'Feature Section': 'leftRight', 'Benefit Section': 'points3icon',
+  'Comparison Section': 'compare', 'Lifestyle Section': 'topBottom',
+  'Trust Section': 'story', 'FAQ Section': 'howTo', 'Brand Story Section': 'story',
+  'CTA Section': 'fullHero', 'How It Works Section': 'howTo',
+  'Accordion Section': 'howTo', 'Carousel Section': 'topBottom',
+  'Before After Section': 'compare', 'Review Slider Section': 'story',
 }
 
 export const TPL_LABELS = [
@@ -63,14 +73,16 @@ export const TPL_COMPAT = {
 
 // 추가 가능한 섹션 목록
 export const EXTRA_SECTIONS = [
-  { type: '재료/성분',    label: '재료/성분',    sub: '원재료 설명',      template: 'material',   designStyle: '크림' },
-  { type: '제조과정',     label: '제조과정',     sub: '만드는 방법',      template: 'points3',    designStyle: '크림' },
-  { type: '수상/인증',    label: '수상/인증',     sub: '품질 인증',        template: 'points3',    designStyle: '크림' },
-  { type: '실제후기',     label: '실제 후기',    sub: '고객 리뷰',        template: 'target',     designStyle: '크림' },
-  { type: 'FAQ',          label: 'FAQ',          sub: '자주 묻는 질문',   template: 'material',   designStyle: '크림' },
-  { type: '보관방법',     label: '보관방법',     sub: '사용/보관 안내',   template: 'detail2col', designStyle: '크림' },
-  { type: '제품상세표시', label: '제품상세표시', sub: '법적 필수 표기',   template: 'specTable',  designStyle: '크림' },
-  { type: '브랜드소개',   label: '브랜드소개',   sub: '회사/브랜드 소개', template: 'hero',       designStyle: '크림' },
+  { type: 'Hero Banner',          label: 'Hero Banner',          sub: 'Premium first-view section',       template: 'hero',       designStyle: '프리미엄블랙' },
+  { type: 'Feature Section',      label: 'Feature Section',      sub: 'Product details and proof points', template: 'detail2col', designStyle: '크림' },
+  { type: 'Benefit Section',      label: 'Benefit Section',      sub: '3 benefit blocks',                 template: 'points3',    designStyle: '민트' },
+  { type: 'Comparison Section',   label: 'Comparison Section',   sub: 'Check / X comparison rows',        template: 'compare',    designStyle: '슬레이트' },
+  { type: 'Lifestyle Section',    label: 'Lifestyle Section',    sub: 'Use case and lifestyle visual',    template: 'material',   designStyle: '웜베이지' },
+  { type: 'Trust Section',        label: 'Trust Section',        sub: 'Credentials, guarantees, proof',   template: 'points3',    designStyle: '딥네이비' },
+  { type: 'FAQ Section',          label: 'FAQ Section',          sub: 'Question and answer blocks',       template: 'target',     designStyle: '크림' },
+  { type: 'Brand Story Section',  label: 'Brand Story Section',  sub: 'Founder or brand narrative',       template: 'story',      designStyle: '올리브' },
+  { type: 'CTA Section',          label: 'CTA Section',          sub: 'Conversion-focused close',         template: 'hero',       designStyle: '프리미엄블랙' },
+  { type: 'How It Works Section', label: 'How It Works Section', sub: 'Interactive step blocks',          template: 'target',     designStyle: '크림' },
 ]
 
 // 추가 섹션 AI 시스템 프롬프트
@@ -432,6 +444,97 @@ ${ctx}
 (150자 이내)
 ▼ 해시태그
 (15개)`
+
+  const {
+    platform = 'Amazon A+',
+    sectionMode = 'Static Section',
+    sectionType = 'Hero Banner',
+    templateVariant = 'hero_01',
+    targetCustomer = '',
+    customerPainPoint = '',
+    buyingMotivation = '',
+    productBenefits = '',
+    productFeatures = '',
+    differentiation = '',
+  } = opts
+
+  const commerceSection = `[SECTION 1 - ${sectionType}]
+메인카피: (English headline, 6-10 words, specific to the product)
+서브카피: (English subheadline, 12-18 words, concrete and conversion-focused)
+내용: (English body copy, 1 concise sentence based on the product facts)
+포인트:
+• (Block 1: concrete benefit, feature, FAQ item, step, or comparison row)
+• (Block 2: concrete benefit, feature, FAQ item, step, or comparison row)
+• (Block 3: concrete benefit, feature, FAQ item, step, or comparison row)
+• (Block 4 only when useful)
+버튼문구: (CTA, 2-4 words, only if the section needs it)
+촬영기획:
+  - Scene: (commercial photo direction)
+  - Lighting: (studio or natural light direction)
+  - Composition: (camera angle and product placement)
+AI프롬프트: (English only, commercial product photography or lifestyle photography, ultra realistic, professional advertising photography, real surface texture, natural imperfections, studio lighting or natural lighting, DSLR quality, product-focused composition, no text, no watermark, no invented logo, --no illustration, cartoon, CGI, plastic texture, AI glow, overprocessed HDR, unrealistic hands, fake logo, watermark, typography)`
+
+  if (id === 'detail') return `You are a senior Amazon A+ Content and Shopify product-page section designer.
+Your job is to generate one reusable commerce section, not a full Korean product detail page.
+
+Current product-page target:
+- Platform: ${platform}
+- Section mode: ${sectionMode}
+- Section type: ${sectionType}
+- Template variant: ${templateVariant}
+- Target customer: ${targetCustomer || '(infer from product facts)'}
+- Customer pain point: ${customerPainPoint || '(infer carefully, do not exaggerate)'}
+- Buying motivation: ${buyingMotivation || '(infer carefully)'}
+- Product benefits: ${productBenefits || '(extract from product description)'}
+- Product features: ${productFeatures || '(extract from product description)'}
+- Differentiation: ${differentiation || '(extract from product description)'}
+
+Strategic rules:
+- This is an AI Commerce Section Builder for Amazon A+ and Shopify.
+- Generate a single high-quality section that could be sold as a Fiverr deliverable.
+- Do not write Korean Smartstore copy.
+- Do not generate blog, card news, SNS, Naver, Instagram, Facebook, or Threads content.
+- Copy must feel like premium US DTC brand / Amazon A+ / Shopify premium theme copy.
+- Avoid generic copy, filler marketing, vague adjectives, and empty claims.
+- Do not overuse words like innovative, ultimate, best, amazing, revolutionary, game-changing.
+- Every line must be grounded in the product information.
+- If product information is thin, infer conservatively and avoid unverifiable claims.
+
+Section architecture:
+- Static Section means PNG export for Amazon A+ and Fiverr delivery.
+- Interactive Section means Shopify-ready section behavior with Template > Section > Block.
+- For Interactive Sections, each point must represent a Block state.
+- For tabs, accordions, carousels, before/after, reviews, or step navigation, explain each Block as content that changes when clicked.
+- Still output using the required section format below so the current editor can render it.
+
+Image direction:
+- Image prompts are internal only and must never instruct text inside the image.
+- Product photo uploads, if provided, should be respected as the source of product truth.
+- Generated images should be background, lifestyle, or supporting imagery unless the product appearance is clear.
+- Style target: commercial photography, premium e-commerce photography, realistic lighting, real material texture.
+
+Required output format:
+
+▼ Creative Brief
+
+[Customer]
+(3-4 English lines, specific and realistic)
+
+[Conversion Job]
+(2-3 English lines explaining what this section must make the buyer believe or do)
+
+[Section Logic]
+(2-3 English lines explaining layout, block behavior, and why it fits ${platform})
+
+▼ Section Metadata
+Platform: ${platform}
+Mode: ${sectionMode}
+Section Type: ${sectionType}
+Template: ${templateVariant}
+
+▼ 섹션 구성
+
+${commerceSection}`
 
   // 상세페이지
   const customBlock = _buildCustomBlock(opts)
