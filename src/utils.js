@@ -78,7 +78,7 @@ export async function capturePNG(el, filename, opts = {}) {
   })
 
   // el(data-sect-card) 부모는 transform:scale 래퍼, 그 위가 wrapRef
-  // 캡처 전 transform을 제거해야 html2canvas가 860px 기준 자연 크기로 정확히 렌더링됨
+  // 캡처 전 transform을 제거해야 html2canvas가 실제 캔버스 폭 기준으로 렌더링됨
   const scaler  = el.parentElement
   const wrap    = scaler?.parentElement
   const prevTx  = scaler?.style.transform || ''
@@ -103,7 +103,7 @@ export async function capturePNG(el, filename, opts = {}) {
       allowTaint: true,
       backgroundColor: null,
       logging: false,
-      windowWidth: 860,
+      windowWidth: el.offsetWidth,
       width:  el.offsetWidth,
       height: el.offsetHeight,
       ...opts,

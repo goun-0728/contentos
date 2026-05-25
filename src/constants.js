@@ -450,6 +450,8 @@ ${ctx}
     sectionMode = 'Static Section',
     sectionType = 'Hero Banner',
     templateVariant = 'hero_01',
+    productName = '',
+    productCategory = '',
     targetCustomer = '',
     customerPainPoint = '',
     buyingMotivation = '',
@@ -482,6 +484,8 @@ Current product-page target:
 - Section mode: ${sectionMode}
 - Section type: ${sectionType}
 - Template variant: ${templateVariant}
+- Product name: ${productName || '(provided by user)'}
+- Product category: ${productCategory || '(translate/infer from product name and description)'}
 - Target customer: ${targetCustomer || '(infer from product facts)'}
 - Customer pain point: ${customerPainPoint || '(infer carefully, do not exaggerate)'}
 - Buying motivation: ${buyingMotivation || '(infer carefully)'}
@@ -491,6 +495,9 @@ Current product-page target:
 
 Strategic rules:
 - This is an AI Commerce Section Builder for Amazon A+ and Shopify.
+- User input may be Korean or English. Translate Korean inputs internally into natural English before writing.
+- Final visible copy must always be English.
+- Image prompts must always be English.
 - Generate a single high-quality section that could be sold as a Fiverr deliverable.
 - Do not write Korean Smartstore copy.
 - Do not generate blog, card news, SNS, Naver, Instagram, Facebook, or Threads content.
@@ -509,6 +516,8 @@ Section architecture:
 
 Image direction:
 - Image prompts are internal only and must never instruct text inside the image.
+- Start every image prompt by locking the exact product identity and category.
+- If the product is a razor, the image must clearly show a realistic shaving razor in a grooming or bathroom context and must not show smartphones or unrelated electronics.
 - Product photo uploads, if provided, should be respected as the source of product truth.
 - Generated images should be background, lifestyle, or supporting imagery unless the product appearance is clear.
 - Style target: commercial photography, premium e-commerce photography, realistic lighting, real material texture.

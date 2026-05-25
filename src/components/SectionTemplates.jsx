@@ -1,7 +1,7 @@
 // src/components/SectionTemplates.jsx
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 
-const CARD_W = 860
+const CARD_W = 970
 
 const SAMPLE_IMGS = [
   'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=800',
@@ -120,8 +120,8 @@ export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMe
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.08)' }}>
         <div style={{ position: 'absolute', top: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center', padding: '0 16px' }}>
           <div style={{ background: 'rgba(255,255,255,0.97)', padding: '12px 24px', borderRadius: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.18)', textAlign: 'center', maxWidth: 340 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 4 }}>📷 판매 제품 사진으로 교체해주세요</div>
-            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>클릭 → 직접 찍은 제품 사진 업로드하면 완성!</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 4 }}>Replace with real product photo</div>
+            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>Upload the client's product image for final delivery.</div>
           </div>
         </div>
         <div onClick={e => { e.stopPropagation(); ref.current?.click() }}
@@ -129,7 +129,7 @@ export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMe
             cursor: 'pointer', background: 'rgba(255,255,255,0.9)', padding: '20px 32px',
             borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.2)', backdropFilter: 'blur(4px)' }}>
           <span style={{ fontSize: 36 }}>📷</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>클릭해서 사진 교체</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>Replace product photo</span>
         </div>
       </div>
     </div>
@@ -140,7 +140,7 @@ export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMe
       {editing && (
         <button onClick={e => { e.stopPropagation(); ref.current?.click() }}
           style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, padding: '8px 18px', fontSize: 13, fontWeight: 700, background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-          📷 교체
+          📷 Replace
         </button>
       )}
       <ImageAdjust url={url} editing={editing} imgMeta={imgMeta} onMetaChange={onMetaChange || (() => {})} fixedH={fixedH} fitMode={fitMode} />

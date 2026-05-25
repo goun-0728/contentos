@@ -51,6 +51,52 @@ const TEMPLATE_LIBRARY = {
   'Review Slider Section': ['review_slider_01'],
   'Feature Tabs Section': ['feature_tabs_01', 'tabs_01'],
 }
+const TEMPLATE_META = {
+  hero_01: { use: 'Beauty / Supplement', layout: 'Image left, copy right' },
+  hero_02: { use: 'Tech / DTC', layout: 'Centered product hero' },
+  hero_03: { use: 'Food / Grocery', layout: 'Lifestyle banner' },
+  hero_04: { use: 'Fashion / Beauty', layout: 'Editorial split' },
+  hero_05: { use: 'Premium Brand', layout: 'Dark studio hero' },
+  feature_01: { use: 'Tech / Appliances', layout: 'Feature image + proof blocks' },
+  feature_02: { use: 'Beauty / Wellness', layout: 'Detail close-up layout' },
+  feature_03: { use: 'DTC Product', layout: 'Feature grid' },
+  benefit_01: { use: 'Supplement / Beauty', layout: 'Three benefit cards' },
+  benefit_02: { use: 'Home / Lifestyle', layout: 'Icon benefit row' },
+  benefit_03: { use: 'Food / Beverage', layout: 'Ingredient-led benefits' },
+  benefit_04: { use: 'Tech', layout: 'Spec-led benefits' },
+  benefit_05: { use: 'Premium DTC', layout: 'Minimal benefit stack' },
+  compare_01: { use: 'Amazon A+', layout: 'Check / X table' },
+  compare_02: { use: 'Fiverr Pitch', layout: 'Competitor comparison' },
+  compare_03: { use: 'Premium', layout: 'Before vs better' },
+  lifestyle_01: { use: 'Lifestyle / DTC', layout: 'Wide lifestyle photo' },
+  lifestyle_02: { use: 'Food / Fashion', layout: 'Scene + copy band' },
+  trust_01: { use: 'Amazon Proof', layout: 'Trust badges' },
+  trust_02: { use: 'Premium Brand', layout: 'Guarantee + proof' },
+  faq_static_01: { use: 'Amazon A+', layout: 'FAQ block stack' },
+  faq_static_02: { use: 'Support', layout: 'Compact Q&A' },
+  brand_story_01: { use: 'Founder Brand', layout: 'Narrative photo section' },
+  brand_story_02: { use: 'DTC Brand', layout: 'Mission-led layout' },
+  cta_01: { use: 'Conversion', layout: 'Product CTA banner' },
+  cta_02: { use: 'Premium Close', layout: 'Dark CTA' },
+  how_it_works_01: { use: 'Shopify', layout: 'Step navigation' },
+  step_navigation_01: { use: 'Shopify', layout: 'Clickable step panel' },
+  accordion_01: { use: 'Shopify FAQ', layout: 'Accordion blocks' },
+  accordion_02: { use: 'Ingredients / Specs', layout: 'Accordion list' },
+  carousel_01: { use: 'Lifestyle Gallery', layout: 'Image carousel' },
+  lifestyle_gallery_01: { use: 'DTC Gallery', layout: 'Gallery slider' },
+  before_after_01: { use: 'Beauty / Cleaning', layout: 'Before-after slider' },
+  review_slider_01: { use: 'Social Proof', layout: 'Review carousel' },
+  feature_tabs_01: { use: 'Shopify PDP', layout: 'Feature tabs' },
+  tabs_01: { use: 'Shopify', layout: 'Tabbed content' },
+}
+const SIZE_PRESETS = {
+  amazon_standard_banner: { label: 'Amazon A+ Standard Banner', size: '970 x 300', width: 970, height: 300, platform: 'Amazon A+' },
+  amazon_standard_module: { label: 'Amazon A+ Standard Module', size: '970 x 600', width: 970, height: 600, platform: 'Amazon A+' },
+  amazon_premium_wide: { label: 'Amazon A+ Premium Wide', size: '1464 x 600', width: 1464, height: 600, platform: 'Amazon A+' },
+  shopify_desktop: { label: 'Shopify Desktop Section', size: '1440 x 720', width: 1440, height: 720, platform: 'Shopify' },
+  shopify_mobile: { label: 'Shopify Mobile Preview', size: '390 x 720', width: 390, height: 720, platform: 'Shopify' },
+}
+const SIZE_PRESET_KEYS = Object.keys(SIZE_PRESETS)
 
 const EMPTY_QUIZ = {
   category: '', priceRange: '',
@@ -147,6 +193,70 @@ function TplIcon({ k }) {
     </div>
   )
   return <div style={{ ...base, background:l }} />
+}
+
+function TemplatePreview({ name }) {
+  const meta = TEMPLATE_META[name] || { use: 'Commerce', layout: 'Section layout' }
+  const isHero = name.startsWith('hero')
+  const isBenefit = name.startsWith('benefit')
+  const isCompare = name.startsWith('compare') || name.includes('before')
+  const isInteractive = name.includes('accordion') || name.includes('tabs') || name.includes('carousel') || name.includes('step') || name.includes('works') || name.includes('slider')
+
+  return (
+    <div style={{ height:76, borderRadius:7, overflow:'hidden', background:'#111827', display:'grid', gridTemplateColumns:isHero?'1.15fr .85fr':'1fr', position:'relative' }}>
+      {isHero ? (
+        <>
+          <div style={{ background:'linear-gradient(135deg,#1f2937,#64748b)', position:'relative' }}>
+            <div style={{ position:'absolute', left:10, top:12, width:44, height:8, borderRadius:2, background:'#fff', opacity:.9 }} />
+            <div style={{ position:'absolute', left:10, top:27, width:72, height:5, borderRadius:2, background:'#fff', opacity:.45 }} />
+            <div style={{ position:'absolute', left:10, bottom:12, width:34, height:10, borderRadius:20, background:'#c8a96e' }} />
+          </div>
+          <div style={{ background:'#f8fafc', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#d1d5db,#94a3b8)' }} />
+          </div>
+        </>
+      ) : isCompare ? (
+        <div style={{ background:'#f8fafc', padding:10 }}>
+          {[0,1,2].map(i => <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4, marginBottom:5 }}><div style={{ height:12, borderRadius:3, background:i===0?'#fee2e2':'#e5e7eb' }} /><div style={{ height:12, borderRadius:3, background:i===0?'#dcfce7':'#d1fae5' }} /></div>)}
+        </div>
+      ) : isBenefit ? (
+        <div style={{ background:'#f8fafc', padding:10, display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6 }}>
+          {[0,1,2].map(i => <div key={i} style={{ borderRadius:5, background:'#e2e8f0', padding:6 }}><div style={{ width:16, height:16, borderRadius:'50%', background:'#10b981', marginBottom:8 }} /><div style={{ height:5, background:'#334155', borderRadius:2, marginBottom:4 }} /><div style={{ height:4, background:'#94a3b8', borderRadius:2 }} /></div>)}
+        </div>
+      ) : isInteractive ? (
+        <div style={{ background:'#f8fafc', padding:10, display:'grid', gridTemplateColumns:'.85fr 1.15fr', gap:8 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:5 }}>{[0,1,2].map(i => <div key={i} style={{ height:14, borderRadius:4, background:i===0?'#1d6b45':'#e2e8f0' }} />)}</div>
+          <div style={{ borderRadius:6, background:'linear-gradient(135deg,#cbd5e1,#64748b)' }} />
+        </div>
+      ) : (
+        <div style={{ background:'#f8fafc', padding:10, display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+          <div><div style={{ height:8, background:'#111827', borderRadius:2, marginBottom:7 }} /><div style={{ height:5, background:'#94a3b8', borderRadius:2, marginBottom:5 }} /><div style={{ height:5, background:'#cbd5e1', borderRadius:2 }} /></div>
+          <div style={{ borderRadius:6, background:'linear-gradient(135deg,#d6d3d1,#a8a29e)' }} />
+        </div>
+      )}
+      <div style={{ position:'absolute', right:7, bottom:6, fontSize:8, color:'#fff', background:'rgba(0,0,0,.45)', padding:'1px 5px', borderRadius:10 }}>{meta.use}</div>
+    </div>
+  )
+}
+
+function TemplateCards({ templates, value, onChange }) {
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:8 }}>
+      {templates.map(name => {
+        const on = value === name
+        const meta = TEMPLATE_META[name] || { use:'Commerce', layout:'Section layout' }
+        return (
+          <button key={name} onClick={() => onChange(name)}
+            style={{ textAlign:'left', padding:8, borderRadius:10, border:`2px solid ${on?'#1D6B45':C.bd}`, background:on?'#F0FDF4':C.sur, cursor:'pointer' }}>
+            <TemplatePreview name={name} />
+            <div style={{ fontSize:12, fontWeight:800, color:on?'#1D6B45':C.tx, marginTop:7 }}>{name}</div>
+            <div style={{ fontSize:10.5, color:C.mu, lineHeight:1.45 }}>{meta.layout}</div>
+            <div style={{ fontSize:10, color:C.fa, marginTop:3 }}>{meta.use}</div>
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 /* ── 미니 컴포넌트 ─────────────────────────────────── */
@@ -556,7 +666,7 @@ function SubQ({ label, children }) {
   )
 }
 
-async function generateSectionImages(sections, onProgress) {
+async function generateSectionImages(sections, onProgress, context = {}) {
   const targets = sections.filter(s => s.imagePrompt && !s.secImg)
   const next = sections.map(s => ({ ...s }))
 
@@ -569,7 +679,10 @@ async function generateSectionImages(sections, onProgress) {
 
     try {
       const image = await generateImage({
-        prompt: target.imagePrompt,
+        prompt: strengthenImagePrompt(target.imagePrompt, {
+          ...context,
+          sectionType: target.sectionType || context.sectionType,
+        }),
         size: '1024x1536',
         quality: 'medium',
       })
@@ -582,6 +695,28 @@ async function generateSectionImages(sections, onProgress) {
 
   onProgress?.('')
   return next
+}
+
+function strengthenImagePrompt(prompt, { productName, productCategory, sectionType, uploadedProductPhoto }) {
+  const category = productCategory?.trim() || 'infer the exact product category from the product name'
+  const name = productName?.trim() || 'the specified product'
+  const lower = `${name} ${category}`.toLowerCase()
+  const exclusions = ['smartphone', 'phone', 'unrelated electronics', 'random gadget', 'fake logo', 'watermark', 'text in image']
+  if (lower.includes('razor') || lower.includes('shaver') || lower.includes('면도기')) exclusions.push('electric toothbrush', 'remote control', 'computer mouse')
+  if (lower.includes('serum') || lower.includes('skincare') || lower.includes('스킨')) exclusions.push('beverage bottle', 'food packaging')
+  if (lower.includes('mango') || lower.includes('food') || lower.includes('망고')) exclusions.push('cosmetic bottle', 'electronics')
+
+  return [
+    `PRODUCT IDENTITY LOCK: The product is "${name}".`,
+    `PRODUCT CATEGORY: ${category}.`,
+    `SECTION CONTEXT: ${sectionType}.`,
+    uploadedProductPhoto
+      ? 'Use the uploaded product photo as the main product truth. Generated imagery must only support the real product photo and must not redesign the product.'
+      : 'If exact product appearance is uncertain, create a realistic placeholder composition and leave room to replace with the real product photo.',
+    'Before rendering, verify the scene clearly shows the correct product category and not an unrelated object.',
+    prompt,
+    `Do not show: ${exclusions.join(', ')}.`,
+  ].join(' ')
 }
 
 /* ── 추가 섹션 AI 출력 파서 ─────────────────────────── */
@@ -905,15 +1040,21 @@ export default function App() {
   const [tabLoading, setTabLoading] = useState({})
   const [error, setError] = useState('')
   const [productName, setProductName] = useState('')
+  const [productCategory, setProductCategory] = useState('')
   const [platform, setPlatform] = useState('Amazon A+')
   const [sectionMode, setSectionMode] = useState('Static Section')
   const [sectionType, setSectionType] = useState('Hero Banner')
   const [templateVariant, setTemplateVariant] = useState('hero_01')
+  const [sizePreset, setSizePreset] = useState('amazon_standard_module')
+  const [generateMode, setGenerateMode] = useState('Fast Draft')
   const [targetCustomer, setTargetCustomer] = useState('')
   const [customerPainPoint, setCustomerPainPoint] = useState('')
   const [buyingMotivation, setBuyingMotivation] = useState('')
   const [productBenefits, setProductBenefits] = useState('')
   const [productFeatures, setProductFeatures] = useState('')
+  const [brandToneInput, setBrandToneInput] = useState('')
+  const [referenceUrl, setReferenceUrl] = useState('')
+  const [triedGenerate, setTriedGenerate] = useState(false)
 
   // 새로고침 시 전체 초기화
   useEffect(() => {
@@ -955,14 +1096,35 @@ export default function App() {
     if (!templates.includes(templateVariant)) setTemplateVariant(templates[0])
   }, [sectionType]) // eslint-disable-line
 
+  useEffect(() => {
+    const current = SIZE_PRESETS[sizePreset]
+    if (platform === 'Shopify' && current?.platform !== 'Shopify') setSizePreset('shopify_desktop')
+    if (platform === 'Amazon A+' && current?.platform !== 'Amazon A+') setSizePreset('amazon_standard_module')
+  }, [platform]) // eslint-disable-line
+
+  const requiredFields = {
+    productName,
+    sharedInput,
+    platform,
+    sectionType,
+    templateVariant,
+    targetCustomer,
+    customerPainPoint,
+    buyingMotivation,
+    productBenefits,
+  }
+  const missingFields = Object.entries(requiredFields).filter(([, value]) => !String(value || '').trim()).map(([key]) => key)
+  const isMissing = key => triedGenerate && missingFields.includes(key)
+  const fieldBorder = key => `1.5px solid ${isMissing(key) ? '#EF4444' : C.bd}`
+
   const step1Done = !!(productName.trim() && sharedInput.trim())
   const step2Done = !!(platform && sectionMode)
   const step3Done = !!(sectionType && templateVariant)
-  const step4Done = true
+  const step4Done = !missingFields.some(k => ['targetCustomer','customerPainPoint','buyingMotivation','productBenefits'].includes(k))
   const step5Done = true
   const step6Done = true
   const step7Done = true
-  const allDone = step1Done && step2Done && step3Done
+  const allDone = missingFields.length === 0
 
   // 탭별 결과
   const [tabResults, setTabResults] = useState(() => {
@@ -1066,16 +1228,22 @@ export default function App() {
 
   const resetAll = () => {
     setProductName('')
+    setProductCategory('')
     setSharedInput('')
     setPlatform('Amazon A+')
     setSectionMode('Static Section')
     setSectionType('Hero Banner')
     setTemplateVariant('hero_01')
+    setSizePreset('amazon_standard_module')
+    setGenerateMode('Fast Draft')
     setTargetCustomer('')
     setCustomerPainPoint('')
     setBuyingMotivation('')
     setProductBenefits('')
     setProductFeatures('')
+    setBrandToneInput('')
+    setReferenceUrl('')
+    setTriedGenerate(false)
     setQuiz({ ...EMPTY_QUIZ })
     setProductImgs([])
     const empty = {}
@@ -1093,7 +1261,12 @@ export default function App() {
   }
 
   const run = async () => {
-    if (!sharedInput.trim() || !allDone || tabLoading[task.id]) return
+    setTriedGenerate(true)
+    if (tabLoading[task.id]) return
+    if (missingFields.length > 0) {
+      setError('')
+      return
+    }
     const tid = task.id
     setTabLoading(prev => ({ ...prev, [tid]: true }))
     saveResult(tid, '')
@@ -1101,13 +1274,18 @@ export default function App() {
     try {
       const userPrompt = [
         `Product Name: ${productName.trim()}`,
+        productCategory && `Product Category: ${productCategory.trim()}`,
         `Product Description: ${sharedInput.trim()}`,
         targetCustomer && `Target Customer: ${targetCustomer.trim()}`,
         customerPainPoint && `Customer Pain Point: ${customerPainPoint.trim()}`,
         buyingMotivation && `Buying Motivation: ${buyingMotivation.trim()}`,
         productBenefits && `Product Benefits: ${productBenefits.trim()}`,
         productFeatures && `Product Features: ${productFeatures.trim()}`,
+        brandToneInput && `Brand Tone: ${brandToneInput.trim()}`,
         quiz.differentiator && `Differentiation: ${quiz.differentiator.trim()}`,
+        referenceUrl && `Reference URL or Competitor Link: ${referenceUrl.trim()}`,
+        'If any input is Korean, translate it internally into natural English before writing copy or image prompts.',
+        'Final section copy must be English. Image prompts must be English.',
       ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
       const quizOpts = {
@@ -1116,24 +1294,37 @@ export default function App() {
         sectionMode,
         sectionType,
         templateVariant,
+        productName,
+        productCategory,
         targetCustomer,
         customerPainPoint,
         buyingMotivation,
         productBenefits,
         productFeatures,
+        brandTone: brandToneInput ? [brandToneInput] : [],
         differentiation: quiz.differentiator,
       }
       const sysBase = getSys(tid, tone, quizOpts)
       const systemPrompt = hasImgs
         ? sysBase + '\n\n업로드된 제품 사진을 분석해서 제품의 외형·색상·패키지 디자인을 파악하고, 각 섹션 AI프롬프트에 실제 제품의 시각적 특성(색상, 형태, 질감, 소재감)을 구체적으로 반영해줘.'
         : sysBase
-      const text = await generateContent({
-        systemPrompt,
-        userPrompt,
-        images: hasImgs ? productImgs : [],
-        model: 'gpt-4o',
-        maxTokens: tid === 'detail' ? 4000 : 2000,
-      })
+      const optionCount = generateMode === 'Client Presentation' ? 3 : 1
+      const optionTexts = []
+      for (let i = 0; i < optionCount; i++) {
+        const variant = availableTemplates[i % availableTemplates.length] || templateVariant
+        const optionPrompt = optionCount === 1
+          ? userPrompt
+          : `${userPrompt}\n\nDesign Option ${String.fromCharCode(65 + i)}: Use template ${variant}. Make this option visually and strategically distinct from the other options.`
+        const optionText = await generateContent({
+          systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }),
+          userPrompt: optionPrompt,
+          images: hasImgs ? productImgs : [],
+          model: 'gpt-4o',
+          maxTokens: tid === 'detail' ? 4000 : 2000,
+        })
+        optionTexts.push(optionCount === 1 ? optionText : `▼ Design Option ${String.fromCharCode(65 + i)}\n\n${optionText}`)
+      }
+      const text = optionTexts.join('\n\n')
       saveResult(tid, text)
       if (tid === 'card') {
         setCardData(null); try { localStorage.removeItem('cos_card_data') } catch {}
@@ -1141,11 +1332,24 @@ export default function App() {
       }
       if (tid === 'detail') {
         setImageGenStatus('')
+        const preset = SIZE_PRESETS[sizePreset] || SIZE_PRESETS.amazon_standard_module
+        const parsed = parseSections(text).map((s, i) => ({
+          ...s,
+          title: generateMode === 'Client Presentation' ? `Design Option ${String.fromCharCode(65 + i)}` : s.title,
+          canvas: { preset: sizePreset, ...preset },
+          secImg: productImgs[0] || s.secImg,
+          productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
+        }))
         if (autoGenerateImages) {
-          const generated = await generateSectionImages(parseSections(text), setImageGenStatus)
+          const generated = await generateSectionImages(parsed, setImageGenStatus, {
+            productName,
+            productCategory,
+            sectionType,
+            uploadedProductPhoto: productImgs.length > 0,
+          })
           saveDetailData(generated)
         } else {
-          setDetailData(null); try { localStorage.removeItem('cos_detail_data') } catch {}
+          saveDetailData(parsed)
         }
         setDetailGenKey(k => k + 1)
       }
@@ -1245,14 +1449,21 @@ export default function App() {
             <SubQ label="Product Name">
               <input value={productName} onChange={e => setProductName(e.target.value)}
                 placeholder="예) 제주 애플망고 / Ceramic pour-over set / Hydrating face serum"
-                style={{ width: '100%', padding: '12px 14px', border: `1.5px solid ${productName.trim() ? C.bd : '#FECACA'}`, borderRadius: 10, outline: 'none', fontSize: 14, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px 14px', border: fieldBorder('productName'), borderRadius: 10, outline: 'none', fontSize: 14, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+
+            <SubQ label="Product Category">
+              <input value={productCategory} onChange={e => setProductCategory(e.target.value)}
+                placeholder="예) Razor / Men's grooming / Beauty serum / Kitchen appliance"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
 
             <SubQ label="Product Description">
               <textarea ref={taRef} value={sharedInput} onChange={e => setSharedInput(e.target.value)}
                 placeholder="제품 특징, 소재, 가격대, 고객, 차별점, 사용 상황을 자유롭게 적어주세요."
-                style={{ width: '100%', minHeight: 120, padding: '12px 14px', border: `1.5px solid ${sharedInput.trim() ? C.bd : '#FECACA'}`, borderRadius: 10, outline: 'none', resize: 'none', fontSize: 14, lineHeight: 1.85, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
+                style={{ width: '100%', minHeight: 120, padding: '12px 14px', border: fieldBorder('sharedInput'), borderRadius: 10, outline: 'none', resize: 'none', fontSize: 14, lineHeight: 1.85, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
               />
             </SubQ>
 
@@ -1308,7 +1519,28 @@ export default function App() {
               <OptionBtns options={availableSectionTypes} value={sectionType} onChange={setSectionType} />
             </SubQ>
             <SubQ label="Template">
-              <OptionBtns options={availableTemplates} value={templateVariant} onChange={setTemplateVariant} />
+              <TemplateCards templates={availableTemplates} value={templateVariant} onChange={setTemplateVariant} />
+            </SubQ>
+            <SubQ label="Canvas Size Preset">
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:8 }}>
+                {SIZE_PRESET_KEYS.map(k => {
+                  const p = SIZE_PRESETS[k]
+                  const on = sizePreset === k
+                  return (
+                    <button key={k} onClick={() => setSizePreset(k)}
+                      style={{ padding:'10px 12px', textAlign:'left', borderRadius:10, border:`2px solid ${on?'#1D6B45':C.bd}`, background:on?'#F0FDF4':C.sur, cursor:'pointer' }}>
+                      <div style={{ fontSize:12, fontWeight:800, color:on?'#1D6B45':C.tx }}>{p.label}</div>
+                      <div style={{ fontSize:11, color:C.mu, marginTop:3 }}>{p.size}</div>
+                    </button>
+                  )
+                })}
+              </div>
+            </SubQ>
+            <SubQ label="Generate Mode">
+              <OptionBtns options={['Fast Draft', 'Client Presentation']} value={generateMode} onChange={setGenerateMode} />
+              <p style={{ margin:'8px 0 0', fontSize:11, color:C.fa, lineHeight:1.65 }}>
+                Fast Draft creates 1 design. Client Presentation creates 3 options for client selection and uses more API credits.
+              </p>
             </SubQ>
           </StepCard>
 
@@ -1317,25 +1549,25 @@ export default function App() {
             <SubQ label="Target Customer">
               <input value={targetCustomer} onChange={e => setTargetCustomer(e.target.value)}
                 placeholder="예) busy parents, Amazon shoppers comparing premium options"
-                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '10px 13px', border: fieldBorder('targetCustomer'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
             <SubQ label="Customer Pain Point">
               <input value={customerPainPoint} onChange={e => setCustomerPainPoint(e.target.value)}
                 placeholder="구매자가 해결하고 싶은 불편함"
-                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '10px 13px', border: fieldBorder('customerPainPoint'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
             <SubQ label="Buying Motivation">
               <input value={buyingMotivation} onChange={e => setBuyingMotivation(e.target.value)}
                 placeholder="왜 지금 구매해야 하는지"
-                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '10px 13px', border: fieldBorder('buyingMotivation'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
             <SubQ label="Product Benefits">
               <textarea value={productBenefits} onChange={e => setProductBenefits(e.target.value)}
                 placeholder="전환에 중요한 benefit을 적어주세요."
-                style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+                style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: fieldBorder('productBenefits'), borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
             <SubQ label="Product Features">
@@ -1348,6 +1580,18 @@ export default function App() {
               <textarea ref={diffRef} value={quiz.differentiator} onChange={e => updQuiz('differentiator', e.target.value)}
                 placeholder="경쟁 제품과 다르게 말할 수 있는 사실 기반 차별점"
                 style={{ width: '100%', minHeight: 72, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.8, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
+              />
+            </SubQ>
+            <SubQ label="Brand Tone">
+              <input value={brandToneInput} onChange={e => setBrandToneInput(e.target.value)}
+                placeholder="예) premium clinical, warm DTC, technical, minimalist"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Reference URL or Competitor Link">
+              <input value={referenceUrl} onChange={e => setReferenceUrl(e.target.value)}
+                placeholder="Amazon listing, Shopify store, competitor page, or mood reference"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
           </StepCard>
@@ -1421,8 +1665,8 @@ export default function App() {
                   : <p style={{ fontSize: 11, color: '#EF4444', margin: 0 }}>미완료: {incompletedSteps.join(', ')}</p>
                 }
               </div>
-              <button onClick={run} disabled={!allDone || loading}
-                style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: (!allDone || loading) ? '#ECEAE5' : C.tx, color: (!allDone || loading) ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: (!allDone || loading) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
+              <button onClick={run} disabled={loading}
+                style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: loading ? '#ECEAE5' : C.tx, color: loading ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
                 {loading ? <><Spin />Generating…</> : `✦ Generate ${sectionType}`}
               </button>
             </div>
@@ -1430,6 +1674,11 @@ export default function App() {
 
           {/* 에러 */}
           {error && <div style={{ padding: '12px 15px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9, fontSize: 13, color: '#b91c1c', marginBottom: 14 }}>{error}</div>}
+          {triedGenerate && missingFields.length > 0 && (
+            <div style={{ padding: '12px 15px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 9, fontSize: 13, color: '#c2410c', marginBottom: 14 }}>
+              Please complete all required fields before generating your section.
+            </div>
+          )}
 
           {/* 로딩 */}
           {loading && (

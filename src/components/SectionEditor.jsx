@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { C, DS, TPL_COMPAT } from '../constants'
 import { TPL } from './SectionTemplates'
 
+const BASE_CARD_W = 970
+
 function getGradCSS(grad, t) {
   const alpha = (grad.alpha ?? 70) / 100
   const col   = grad.color || t.bg || '#000000'
@@ -137,6 +139,9 @@ export default function SectionEditor({
   const ref     = useRef(null)
   const wrapRef = useRef(null)
   const snapRef = useRef(null)
+  const canvasW = sec.canvas?.width || BASE_CARD_W
+  const canvasH = sec.canvas?.height || null
+  const canvasScale = canvasW / BASE_CARD_W
 
   useEffect(() => {
     const handle = e => {
@@ -152,10 +157,10 @@ export default function SectionEditor({
 
   useEffect(() => {
     const el = wrapRef.current; if (!el) return
-    const obs = new ResizeObserver(() => setScale(Math.min(1, el.offsetWidth / 860)))
+    const obs = new ResizeObserver(() => setScale(Math.min(1, el.offsetWidth / canvasW)))
     obs.observe(el)
     return () => obs.disconnect()
-  }, [])
+  }, [canvasW])
 
   useEffect(() => {
     const inner = ref.current; if (!inner || !wrapRef.current) return
@@ -217,18 +222,21 @@ export default function SectionEditor({
 
       {/* 카드 미리보기 */}
       <div ref={wrapRef} style={{ position:'relative', overflow:'hidden' }}>
-        <div style={{ width:860, transformOrigin:'top left', transform:`scale(${scale})` }}>
+        <div style={{ width:canvasW, transformOrigin:'top left', transform:`scale(${scale})` }}>
           <div
             ref={ref}
             data-sect-card
-            style={{ fontFamily:"'Nanum Gothic','Apple SD Gothic Neo',sans-serif", width:860, position:'relative' }}
+            data-canvas-width={canvasW}
+            style={{ fontFamily:"'Nanum Gothic','Apple SD Gothic Neo',sans-serif", width:canvasW, minHeight:canvasH || undefined, position:'relative', overflow:'hidden' }}
           >
-            <Tpl
-              s={sec} img={img} t={t} editing={true} onChange={change}
-              secMeta={secMeta}
-              onSecMeta={(key,val) => setSecMeta(p => ({...p,[key]:val}))}
-              onFieldFocus={f => { onActiveFieldChange?.(f); onActiveOverlayChange?.(null) }}
-            />
+            <div style={{ width:BASE_CARD_W, transformOrigin:'top left', transform:`scale(${canvasScale})` }}>
+              <Tpl
+                s={sec} img={img} t={t} editing={true} onChange={change}
+                secMeta={secMeta}
+                onSecMeta={(key,val) => setSecMeta(p => ({...p,[key]:val}))}
+                onFieldFocus={f => { onActiveFieldChange?.(f); onActiveOverlayChange?.(null) }}
+              />
+            </div>
             {grad.dir && grad.dir !== 'none' && (
               <div style={{
                 position:'absolute', inset:0, pointerEvents:'none', zIndex:8,
