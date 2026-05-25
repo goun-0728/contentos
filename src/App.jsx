@@ -97,6 +97,29 @@ const SIZE_PRESETS = {
   shopify_mobile: { label: 'Shopify Mobile Preview', size: '390 x 720', width: 390, height: 720, platform: 'Shopify' },
 }
 const SIZE_PRESET_KEYS = Object.keys(SIZE_PRESETS)
+const CONCEPT_DIRECTIONS = [
+  {
+    label: 'Option A',
+    name: 'Premium Luxury',
+    layout: 'editorial hero layout with elevated spacing and a premium visual hierarchy',
+    copy: 'aspirational but specific premium DTC copy with restrained language',
+    image: 'high-end studio product photography, rich lighting, premium surface textures',
+  },
+  {
+    label: 'Option B',
+    name: 'Clean Minimal',
+    layout: 'clean modular layout with generous whitespace and simple block structure',
+    copy: 'clear, concise, minimalist copy focused on product clarity and trust',
+    image: 'bright commercial photography, clean background, natural realistic light',
+  },
+  {
+    label: 'Option C',
+    name: 'Conversion Focused',
+    layout: 'benefit-led conversion layout with prominent proof points and CTA emphasis',
+    copy: 'direct conversion copy focused on pain point, benefit, proof, and action',
+    image: 'e-commerce advertising photography that makes the product use case obvious',
+  },
+]
 
 const EMPTY_QUIZ = {
   category: '', priceRange: '',
@@ -1308,13 +1331,23 @@ export default function App() {
       const systemPrompt = hasImgs
         ? sysBase + '\n\n업로드된 제품 사진을 분석해서 제품의 외형·색상·패키지 디자인을 파악하고, 각 섹션 AI프롬프트에 실제 제품의 시각적 특성(색상, 형태, 질감, 소재감)을 구체적으로 반영해줘.'
         : sysBase
-      const optionCount = generateMode === 'Client Presentation' ? 3 : 1
+      const optionCount = generateMode === 'Multi Concept' ? 3 : 1
       const optionTexts = []
       for (let i = 0; i < optionCount; i++) {
         const variant = availableTemplates[i % availableTemplates.length] || templateVariant
+        const concept = CONCEPT_DIRECTIONS[i] || CONCEPT_DIRECTIONS[0]
         const optionPrompt = optionCount === 1
-          ? userPrompt
-          : `${userPrompt}\n\nDesign Option ${String.fromCharCode(65 + i)}: Use template ${variant}. Make this option visually and strategically distinct from the other options.`
+          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 Design Concept, 1 Copy Direction, and 1 Image Direction for quick testing and minimum API cost.`
+          : `${userPrompt}
+
+Design Generation Mode: Multi Concept
+${concept.label} - ${concept.name}
+- Layout Direction: ${concept.layout}
+- Copy Direction: ${concept.copy}
+- Image Direction: ${concept.image}
+- Template: ${variant}
+
+This concept must differ from the other options in at least one of: Layout, Copy, or Image Style.`
         const optionText = await generateContent({
           systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }),
           userPrompt: optionPrompt,
@@ -1322,7 +1355,7 @@ export default function App() {
           model: 'gpt-4o',
           maxTokens: tid === 'detail' ? 4000 : 2000,
         })
-        optionTexts.push(optionCount === 1 ? optionText : `▼ Design Option ${String.fromCharCode(65 + i)}\n\n${optionText}`)
+        optionTexts.push(optionCount === 1 ? optionText : `▼ ${concept.label} - ${concept.name}\n\n${optionText}`)
       }
       const text = optionTexts.join('\n\n')
       saveResult(tid, text)
@@ -1335,7 +1368,7 @@ export default function App() {
         const preset = SIZE_PRESETS[sizePreset] || SIZE_PRESETS.amazon_standard_module
         const parsed = parseSections(text).map((s, i) => ({
           ...s,
-          title: generateMode === 'Client Presentation' ? `Design Option ${String.fromCharCode(65 + i)}` : s.title,
+          title: generateMode === 'Multi Concept' ? `${CONCEPT_DIRECTIONS[i]?.label || 'Option'} - ${CONCEPT_DIRECTIONS[i]?.name || 'Concept'}` : s.title,
           canvas: { preset: sizePreset, ...preset },
           secImg: productImgs[0] || s.secImg,
           productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
@@ -1537,10 +1570,32 @@ export default function App() {
               </div>
             </SubQ>
             <SubQ label="Generate Mode">
-              <OptionBtns options={['Fast Draft', 'Client Presentation']} value={generateMode} onChange={setGenerateMode} />
-              <p style={{ margin:'8px 0 0', fontSize:11, color:C.fa, lineHeight:1.65 }}>
-                Fast Draft creates 1 design. Client Presentation creates 3 options for client selection and uses more API credits.
-              </p>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:8 }}>
+                {[
+                  { key:'Fast Draft', title:'Fast Draft', desc:'1 Design Concept · 1 Copy Direction · 1 Image Direction', sub:'빠른 테스트용 / 비용 최소화' },
+                  { key:'Multi Concept', title:'Multi Concept', desc:'3 Design Concepts · 3 Copy Directions · 3 Image Directions', sub:'고객 제안용 / Fiverr Presentation용' },
+                ].map(mode => {
+                  const on = generateMode === mode.key
+                  return (
+                    <button key={mode.key} onClick={() => setGenerateMode(mode.key)}
+                      style={{ padding:'12px 14px', borderRadius:10, border:`2px solid ${on?'#1D6B45':C.bd}`, background:on?'#F0FDF4':C.sur, textAlign:'left', cursor:'pointer' }}>
+                      <div style={{ fontSize:13, fontWeight:800, color:on?'#1D6B45':C.tx }}>{mode.title}</div>
+                      <div style={{ fontSize:11, color:C.mu, lineHeight:1.5, marginTop:4 }}>{mode.desc}</div>
+                      <div style={{ fontSize:10.5, color:C.fa, marginTop:4 }}>{mode.sub}</div>
+                    </button>
+                  )
+                })}
+              </div>
+              {generateMode === 'Multi Concept' && (
+                <div style={{ marginTop:8, display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:6 }}>
+                  {CONCEPT_DIRECTIONS.map(c => (
+                    <div key={c.label} style={{ padding:'8px 10px', border:`1px solid ${C.bd}`, borderRadius:8, background:C.alt }}>
+                      <div style={{ fontSize:11, fontWeight:800, color:C.tx }}>{c.label}</div>
+                      <div style={{ fontSize:10.5, color:C.mu, marginTop:2 }}>{c.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </SubQ>
           </StepCard>
 
