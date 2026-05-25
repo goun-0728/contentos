@@ -158,13 +158,17 @@ export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMe
 /* ── 텍스트 스타일 읽기 helper ── */
 function getTS(s, field, def = {}) {
   const stored = s.textStyles?.[field] || {}
+  const fallbackFont = "'Inter','Helvetica Neue',Arial,'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif"
   return {
     fontSize:      stored.fontSize      ?? def.fontSize      ?? 18,
     color:         stored.color         ?? def.color         ?? '#111',
-    fontFamily:    stored.fontFamily    ?? def.fontFamily    ?? "'Nanum Gothic', sans-serif",
-    fontWeight:    stored.bold ? 700 : (def.fontWeight ?? 400),
-    lineHeight:    def.lineHeight    || 1.6,
-    letterSpacing: def.letterSpacing || 'normal',
+    fontFamily:    stored.fontFamily    ?? def.fontFamily    ?? fallbackFont,
+    fontWeight:    stored.bold === true ? 700 : stored.bold === false ? 400 : (def.fontWeight ?? 400),
+    fontStyle:     stored.italic ? 'italic' : (def.fontStyle || 'normal'),
+    textAlign:     stored.textAlign     ?? def.textAlign     ?? 'inherit',
+    lineHeight:    stored.lineHeight    ?? def.lineHeight    ?? 1.6,
+    letterSpacing: stored.letterSpacing ?? def.letterSpacing ?? 'normal',
+    overflowWrap: 'break-word',
     wordBreak: 'keep-all',
     whiteSpace: 'pre-wrap',
   }
@@ -172,12 +176,16 @@ function getTS(s, field, def = {}) {
 
 /* ── ET: 클릭하면 인라인 편집 + placeholder + 모서리 리사이즈 핸들 ── */
 function ET({ s, field, editing, onChange, onFocus, def = {}, style: extra = {}, placeholder = '' }) {
+  const stored = s.textStyles?.[field] || {}
   const st  = { ...getTS(s, field, def), ...extra }
   const val = s[field] || ''
   const [hovered,  setHovered]  = useState(false)
   const [resizing, setResizing] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const [focused,  setFocused]  = useState(false)
   const rsRef = useRef(null)
+  const dragRef = useRef(null)
+  const startRef = useRef(null)
 
   useEffect(() => {
     if (!resizing) return
@@ -195,15 +203,58 @@ function ET({ s, field, editing, onChange, onFocus, def = {}, style: extra = {},
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
   }, [resizing]) // eslint-disable-line
 
+  const setOffset = useCallback((x, y) => {
+    onChange('textStyles', {
+      ...(s.textStyles || {}),
+      [field]: {
+        ...(s.textStyles?.[field] || {}),
+        offsetX: Math.max(-160, Math.min(160, Math.round(x))),
+        offsetY: Math.max(-160, Math.min(160, Math.round(y))),
+      }
+    })
+  }, [s.textStyles, field, onChange])
+
+  useEffect(() => {
+    if (!dragging) return
+    const onMove = e => {
+      if (!startRef.current) return
+      const { mx, my, ox, oy } = startRef.current
+      setOffset(ox + e.clientX - mx, oy + e.clientY - my)
+    }
+    const onUp = () => setDragging(false)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+  }, [dragging, setOffset])
+
+  const beginDrag = e => {
+    if (!editing || e.target.getAttribute('contenteditable') === 'true') return
+    startRef.current = { mx: e.clientX, my: e.clientY, ox: stored.offsetX || 0, oy: stored.offsetY || 0 }
+    setDragging(true)
+    onFocus?.(field)
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
   if (!editing) {
     const display = val || placeholder
     if (!display) return null
-    return <div style={{ ...st, opacity: val ? 1 : 0.35 }}>{display}</div>
+    return <div style={{ ...st, transform: `translate(${stored.offsetX || 0}px, ${stored.offsetY || 0}px)`, opacity: val ? 1 : 0.35 }}>{display}</div>
   }
   const showPH = !!placeholder && !val && !focused
   return (
     <div
-      style={{ position: 'relative', display: extra.display || 'block' }}
+      ref={dragRef}
+      style={{
+        position: 'relative',
+        display: extra.display || 'block',
+        transform: `translate(${stored.offsetX || 0}px, ${stored.offsetY || 0}px)`,
+        zIndex: 22,
+        cursor: dragging ? 'grabbing' : 'default',
+        outline: hovered || dragging ? '1px dashed rgba(59,130,246,0.55)' : 'none',
+        borderRadius: 4,
+      }}
+      onMouseDown={beginDrag}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -298,7 +349,7 @@ function DragET({ s, field, editing, onChange, onFocus, def = {}, placeholder = 
 
   return (
     <div ref={dragRef}
-      style={{ position: 'absolute', left: `${xp}%`, top: `${yp}%`, zIndex: 5, maxWidth: '82%',
+      style={{ position: 'absolute', left: `${xp}%`, top: `${yp}%`, zIndex: 30, maxWidth: '82%',
         cursor: editing ? (dragging ? 'grabbing' : 'grab') : 'default',
         padding: editing ? '4px 8px' : 0,
         outline: editing ? '1px dashed rgba(255,255,255,0.45)' : 'none' }}

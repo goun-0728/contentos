@@ -68,6 +68,11 @@ export function downloadURL(url, name) {
 
 // ── html2canvas PNG 저장 ────────────────────────────
 export async function capturePNG(el, filename, opts = {}) {
+  if (document.fonts?.ready) {
+    try { await document.fonts.ready } catch {}
+  }
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
   const h2c = await new Promise((res, rej) => {
     if (window.html2canvas) { res(window.html2canvas); return }
     const s = document.createElement('script')
@@ -92,7 +97,7 @@ export async function capturePNG(el, filename, opts = {}) {
       wrap.style.overflow = 'visible'
     }
     // 브라우저가 레이아웃을 재계산하도록 한 프레임 대기
-    await new Promise(r => requestAnimationFrame(r))
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
   }
 
   const exportW = Number(el.dataset?.canvasWidth) || el.offsetWidth

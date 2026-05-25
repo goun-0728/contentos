@@ -582,6 +582,9 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
     : activeOverlay
       ? ((sec.overlayTexts || []).find(o => o.id === activeOverlay)?.style || {})
       : {}
+  const activeOverlayObj = activeOverlay ? (sec.overlayTexts || []).find(o => o.id === activeOverlay) : null
+  const boldActive = currentStyle.bold === true
+  const italicActive = currentStyle.italic === true
 
   const ALL_FIELDS = ['mainCopy','subCopy','description','badge','cta','compareLeft','compareRight']
   const updateTS = (key, val) => {
@@ -600,6 +603,27 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
       ALL_FIELDS.forEach(f => { newTS[f] = { ...(newTS[f] || {}), [key]: val } })
       change('textStyles', newTS)
     }
+  }
+  const duplicateOverlay = () => {
+    if (!activeOverlayObj) return
+    change('overlayTexts', [
+      ...(sec.overlayTexts || []),
+      {
+        ...activeOverlayObj,
+        id: Math.random().toString(36).slice(2, 9),
+        x: Math.min(90, (activeOverlayObj.x ?? 10) + 3),
+        y: Math.min(94, (activeOverlayObj.y ?? 10) + 3),
+        style: { ...(activeOverlayObj.style || {}), zIndex: (activeOverlayObj.style?.zIndex ?? 32) + 1 },
+      }
+    ])
+  }
+  const bumpOverlayZ = delta => {
+    if (!activeOverlayObj) return
+    change('overlayTexts', (sec.overlayTexts || []).map(ot =>
+      ot.id === activeOverlay
+        ? { ...ot, style: { ...(ot.style || {}), zIndex: Math.max(1, (ot.style?.zIndex ?? 32) + delta) } }
+        : ot
+    ))
   }
 
   return (
@@ -630,6 +654,16 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
           <button onClick={() => uploadRef.current?.click()}
             style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>
             새 이미지
+          </button>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:5, marginBottom:10 }}>
+          <button onClick={() => change('imageFit', (sec.imageFit || 'cover') === 'contain' ? 'cover' : 'contain')}
+            style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>
+            Fit: {(sec.imageFit || 'cover') === 'contain' ? 'Contain' : 'Cover'}
+          </button>
+          <button onClick={() => change('imageMeta', {})}
+            style={{ padding:'7px 4px', fontSize:10.5, borderRadius:7, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>
+            위치 초기화
           </button>
         </div>
 
@@ -749,10 +783,16 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
             )
           })}
         </div>
-        <button onClick={() => updateTS('bold', !currentStyle.bold)}
-          style={{ width:'100%', padding:'5px 0', fontSize:11, borderRadius:6, border:`1.5px solid ${currentStyle.bold?'#3b82f6':C.bd}`, background:currentStyle.bold?'#EFF6FF':C.sur, color:currentStyle.bold?'#1d4ed8':C.mu, cursor:'pointer', fontWeight:currentStyle.bold?700:400, marginBottom:8 }}>
-          <strong>B</strong> 굵게
-        </button>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:5, marginBottom:8 }}>
+          <button onClick={() => updateTS('bold', !boldActive)}
+            style={{ width:'100%', padding:'5px 0', fontSize:11, borderRadius:6, border:`1.5px solid ${boldActive?'#3b82f6':C.bd}`, background:boldActive?'#EFF6FF':C.sur, color:boldActive?'#1d4ed8':C.mu, cursor:'pointer', fontWeight:boldActive?700:400 }}>
+            <strong>B</strong> 굵게
+          </button>
+          <button onClick={() => updateTS('italic', !italicActive)}
+            style={{ width:'100%', padding:'5px 0', fontSize:11, borderRadius:6, border:`1.5px solid ${italicActive?'#3b82f6':C.bd}`, background:italicActive?'#EFF6FF':C.sur, color:italicActive?'#1d4ed8':C.mu, cursor:'pointer', fontStyle:'italic', fontWeight:italicActive?700:400 }}>
+            I 기울임
+          </button>
+        </div>
 
         {/* 선택된 텍스트 스타일 */}
         {hasActive && (
@@ -783,6 +823,50 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
                   style={{ width:28, height:22, border:'1px solid #ccc', padding:0, cursor:'pointer', borderRadius:4, flexShrink:0 }} />
               </div>
             </div>
+            <div style={{ marginBottom:12 }}>
+              <span style={{ fontSize:10, color:C.mu, display:'block', marginBottom:5 }}>정렬</span>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:4 }}>
+                {['left','center','right'].map(a => (
+                  <button key={a} onClick={() => updateTS('textAlign', a)}
+                    style={{ padding:'5px 0', fontSize:10.5, borderRadius:6, border:`1.5px solid ${currentStyle.textAlign===a?'#3b82f6':C.bd}`, background:currentStyle.textAlign===a?'#EFF6FF':C.sur, color:currentStyle.textAlign===a?'#1d4ed8':C.mu, cursor:'pointer', fontWeight:currentStyle.textAlign===a?700:400 }}>
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ marginBottom:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                <span style={{ fontSize:10, color:C.mu }}>줄간격</span>
+                <span style={{ fontSize:10, fontWeight:700, color:C.tx }}>{currentStyle.lineHeight ?? 1.4}</span>
+              </div>
+              <input type="range" min={0.9} max={2.2} step={0.05}
+                value={currentStyle.lineHeight ?? 1.4}
+                onChange={e => updateTS('lineHeight', +e.target.value)}
+                style={{ width:'100%', accentColor:'#3b82f6' }} />
+            </div>
+            <div style={{ marginBottom:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                <span style={{ fontSize:10, color:C.mu }}>자간</span>
+                <span style={{ fontSize:10, fontWeight:700, color:C.tx }}>{currentStyle.letterSpacing ?? 0}px</span>
+              </div>
+              <input type="range" min={-2} max={8} step={0.2}
+                value={Number.parseFloat(currentStyle.letterSpacing) || 0}
+                onChange={e => updateTS('letterSpacing', `${e.target.value}px`)}
+                style={{ width:'100%', accentColor:'#3b82f6' }} />
+            </div>
+            {activeOverlay && (
+              <div style={{ marginBottom:12 }}>
+                <span style={{ fontSize:10, color:C.mu, display:'block', marginBottom:5 }}>추가 텍스트 레이어</span>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:4 }}>
+                  <button onClick={duplicateOverlay}
+                    style={{ padding:'6px 0', fontSize:10.5, borderRadius:6, border:`1px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>복제</button>
+                  <button onClick={() => bumpOverlayZ(1)}
+                    style={{ padding:'6px 0', fontSize:10.5, borderRadius:6, border:`1px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>앞으로</button>
+                  <button onClick={() => bumpOverlayZ(-1)}
+                    style={{ padding:'6px 0', fontSize:10.5, borderRadius:6, border:`1px solid ${C.bd}`, background:C.sur, color:C.tx, cursor:'pointer', fontWeight:700 }}>뒤로</button>
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -964,20 +1048,52 @@ function strengthenImagePrompt(prompt, { productName, productCategory, sectionTy
   const category = productCategory?.trim() || 'infer the exact product category from the product name'
   const name = productName?.trim() || 'the specified product'
   const lower = `${name} ${category}`.toLowerCase()
-  const exclusions = ['smartphone', 'phone', 'unrelated electronics', 'random gadget', 'fake logo', 'watermark', 'text in image']
+  const exclusions = [
+    'AI-looking image', 'CGI look', 'plastic skin', 'distorted hands', 'unrealistic face',
+    'over-smoothed texture', 'text inside generated image', 'fake logo', 'watermark',
+    'random unrelated products', 'wrong product category', 'smartphone when product is not smartphone',
+    'phone', 'unrelated electronics', 'random gadget', 'excessive HDR', 'fantasy lighting'
+  ]
   if (lower.includes('razor') || lower.includes('shaver') || lower.includes('면도기')) exclusions.push('electric toothbrush', 'remote control', 'computer mouse')
   if (lower.includes('serum') || lower.includes('skincare') || lower.includes('스킨')) exclusions.push('beverage bottle', 'food packaging')
   if (lower.includes('mango') || lower.includes('food') || lower.includes('망고')) exclusions.push('cosmetic bottle', 'electronics')
+  if (lower.includes('rice cooker') || lower.includes('밥솥')) exclusions.push('air fryer', 'speaker', 'helmet')
+  if (lower.includes('pet') || lower.includes('dog') || lower.includes('cat') || lower.includes('반려')) exclusions.push('human food packaging', 'unrelated toy')
+
+  const sec = `${sectionType || ''}`.toLowerCase()
+  const camera = sec.includes('feature') || sec.includes('detail')
+    ? '100mm macro lens, true-to-life texture, crisp product detail'
+    : sec.includes('lifestyle') || sec.includes('use')
+      ? 'Sony A7R V, 35mm lens or 85mm lens, natural window light, shallow depth of field'
+      : 'Canon EOS R5, professional studio softbox lighting, realistic shadows, true-to-life color'
+  const scenePlan = sec.includes('hero')
+    ? 'Hero scene: strongest representative advertising image, clear product visibility, premium background, clean negative space for overlaid text.'
+    : sec.includes('benefit')
+      ? 'Benefit scene: visualize the customer outcome with product plus realistic situation, leaving clean space for short copy.'
+      : sec.includes('feature') || sec.includes('detail')
+        ? 'Feature scene: show material, function, package, ingredient, component, or close-up detail with macro product photography.'
+        : sec.includes('lifestyle')
+          ? 'Lifestyle scene: natural human usage moment suited to the category; hands or partial faces only if realistic and undistorted.'
+          : sec.includes('trust')
+            ? 'Trust scene: communicate origin, manufacturing, certification, quality control, ingredient, material, or proof element.'
+            : sec.includes('cta')
+              ? 'CTA scene: clean product-focused purchase moment with premium e-commerce composition.'
+              : 'Commerce section scene: professional product-page visual with product relevance and room for text.'
 
   return [
     `PRODUCT IDENTITY LOCK: The product is "${name}".`,
     `PRODUCT CATEGORY: ${category}.`,
     `SECTION CONTEXT: ${sectionType}.`,
     imageStrategy ? `IMAGE STRATEGY: ${imageStrategy}.` : '',
+    'PRODUCT FIDELITY: preserve product form, color, label direction, packaging ratio, material, and visual identity. Do not invent a different product.',
     uploadedProductPhoto
-      ? 'Analyze the uploaded reference photo to understand the product category, product use, buying context, and realistic usage scenes. Do not simply reuse the uploaded image as-is. Create a new commercial advertising image appropriate for this section while preserving the real product identity and avoiding unrelated objects.'
+      ? 'Analyze the uploaded reference photo to understand category, product use, buying context, usage scenes, shape, color, package, label, and material. Do not paste the uploaded image as-is. Generate a new commercial advertising image using the reference as product truth while improving background, lighting, props, scene, and composition.'
       : 'If exact product appearance is uncertain, create a realistic placeholder composition and leave room to replace with the real product photo.',
+    'COMMERCIAL PHOTOGRAPHY: premium commercial advertising photography, professional studio product photography, e-commerce hero image quality, Amazon A+ / Shopify product section quality, high-end DTC brand photography.',
+    `CAMERA AND LIGHTING: ${camera}, realistic shadows, natural imperfections, real-world lighting.`,
+    scenePlan,
     'Before rendering, verify the scene clearly shows the correct product category and not an unrelated object.',
+    'If the requested product cannot be confidently shown, produce a safe product photo placeholder instead of an unrelated object.',
     prompt,
     `Do not show: ${exclusions.join(', ')}.`,
   ].join(' ')
@@ -1074,7 +1190,20 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
   const addOverlay = useCallback(() => {
     if (selectedIdx === null) return
     const id  = Math.random().toString(36).slice(2, 9)
-    const newOt = { id, text: '텍스트', x: 10, y: 20, style: { fontSize: 28, color: '#ffffff', fontFamily: "'Nanum Gothic', sans-serif" } }
+    const newOt = {
+      id,
+      text: '텍스트',
+      x: 10,
+      y: 20,
+      style: {
+        fontSize: 28,
+        color: '#ffffff',
+        fontFamily: "'Inter','Helvetica Neue',Arial,'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif",
+        lineHeight: 1.35,
+        letterSpacing: '0px',
+        zIndex: 34,
+      }
+    }
     const sec = sects[selectedIdx]
     upd(selectedIdx, { ...sec, overlayTexts: [...(sec.overlayTexts || []), newOt] })
     setActiveOverlay(id)
@@ -1984,6 +2113,9 @@ This concept must differ from the other options in section flow and at least one
                 시안을 생성하기 전에 필수 입력값을 모두 입력해주세요.
               </div>
             )}
+            <div style={{ padding:'9px 11px', background:'#F8FAFF', border:`1px solid ${C.bd}`, borderRadius:9, color:C.mu, fontSize:11.5, lineHeight:1.6, marginBottom:12 }}>
+              선택한 카테고리와 제품 설명을 기준으로 질문이 바뀝니다. 한국어로 입력해도 결과 카피와 이미지 기획은 Fiverr 납품용 영어로 생성됩니다.
+            </div>
             <SubQ label={categoryQuestions.targetCustomer}>
               <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:8 }}>
                 {TARGET_CUSTOMER_OPTIONS.map(opt => (

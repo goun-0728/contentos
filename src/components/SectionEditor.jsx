@@ -67,18 +67,22 @@ function OverlayTextBlock({ ot, containerRef, onUpdate, onRemove, isActive, onSe
   const st = {
     fontSize:   ot.style?.fontSize   ?? 24,
     color:      ot.style?.color      ?? '#ffffff',
-    fontFamily: ot.style?.fontFamily ?? "'Nanum Gothic', sans-serif",
-    fontWeight: ot.style?.bold ? 700 : 400,
-    lineHeight: 1.4,
+    fontFamily: ot.style?.fontFamily ?? "'Inter','Helvetica Neue',Arial,'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif",
+    fontWeight: ot.style?.bold === true ? 700 : 400,
+    fontStyle:  ot.style?.italic ? 'italic' : 'normal',
+    textAlign:  ot.style?.textAlign ?? 'left',
+    lineHeight: ot.style?.lineHeight ?? 1.4,
+    letterSpacing: ot.style?.letterSpacing ?? 'normal',
     whiteSpace: 'pre-wrap',
     wordBreak:  'keep-all',
+    overflowWrap: 'break-word',
     textShadow: '0 2px 10px rgba(0,0,0,0.7)',
   }
 
   return (
     <div
       style={{
-        position:'absolute', left:`${ot.x ?? 10}%`, top:`${ot.y ?? 10}%`, zIndex:15,
+        position:'absolute', left:`${ot.x ?? 10}%`, top:`${ot.y ?? 10}%`, zIndex:ot.style?.zIndex ?? 32,
         cursor: dragging ? 'grabbing' : 'grab',
         border: isActive ? '2px solid #3b82f6' : '2px dashed rgba(153,153,153,0.7)',
         borderRadius:4, padding: '3px 6px',
@@ -88,8 +92,9 @@ function OverlayTextBlock({ ot, containerRef, onUpdate, onRemove, isActive, onSe
     >
       <div style={{
         fontFamily: st.fontFamily, fontSize: st.fontSize, color: st.color,
-        fontWeight: st.fontWeight, lineHeight: st.lineHeight,
-        whiteSpace: st.whiteSpace, wordBreak: st.wordBreak, textShadow: st.textShadow,
+        fontWeight: st.fontWeight, fontStyle: st.fontStyle, textAlign: st.textAlign,
+        lineHeight: st.lineHeight, letterSpacing: st.letterSpacing,
+        whiteSpace: st.whiteSpace, wordBreak: st.wordBreak, overflowWrap: st.overflowWrap, textShadow: st.textShadow,
       }}>
         <div
           contentEditable suppressContentEditableWarning
@@ -107,13 +112,13 @@ function OverlayTextBlock({ ot, containerRef, onUpdate, onRemove, isActive, onSe
               position:'absolute', top:-10, right:-10, width:20, height:20,
               borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff',
               fontSize:13, fontWeight:700, cursor:'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center', zIndex:20,
+              display:'flex', alignItems:'center', justifyContent:'center', zIndex:44,
             }}
           >×</button>
           {[['nw', { top: -5, left: -5 }, 'nw-resize'], ['ne', { top: -5, right: -5 }, 'ne-resize'],
             ['sw', { bottom: -5, left: -5 }, 'sw-resize'], ['se', { bottom: -5, right: -5 }, 'se-resize']].map(([corner, pos, cur]) => (
             <div key={corner}
-              style={{ position:'absolute', ...pos, width:10, height:10, borderRadius:2, background:'#3b82f6', cursor:cur, zIndex:20, border:'1.5px solid #fff', boxShadow:'0 1px 4px rgba(0,0,0,0.25)' }}
+              style={{ position:'absolute', ...pos, width:10, height:10, borderRadius:2, background:'#3b82f6', cursor:cur, zIndex:44, border:'1.5px solid #fff', boxShadow:'0 1px 4px rgba(0,0,0,0.25)' }}
               onMouseDown={e => {
                 e.preventDefault(); e.stopPropagation()
                 rsRef.current = { startX: e.clientX, startY: e.clientY, startSize: ot.style?.fontSize ?? 24, corner }
@@ -232,7 +237,7 @@ export default function SectionEditor({
             data-sect-card
             data-canvas-width={canvasW}
             data-canvas-height={canvasH}
-            style={{ fontFamily:"'Nanum Gothic','Apple SD Gothic Neo',sans-serif", width:canvasW, height:canvasH, position:'relative', overflow:'hidden' }}
+            style={{ fontFamily:"'Inter','Helvetica Neue',Arial,'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif", width:canvasW, height:canvasH, position:'relative', overflow:'hidden' }}
           >
             <div style={{ width:BASE_CARD_W, transformOrigin:'top left', transform:`scale(${canvasScale})` }}>
               <Tpl
@@ -244,7 +249,7 @@ export default function SectionEditor({
             </div>
             {grad.dir && grad.dir !== 'none' && (
               <div style={{
-                position:'absolute', inset:0, pointerEvents:'none', zIndex:8,
+                position:'absolute', inset:0, pointerEvents:'none', zIndex:4,
                 background: getGradCSS(grad, t),
               }} />
             )}
@@ -258,7 +263,7 @@ export default function SectionEditor({
                 onRemove={rmOverlay}
               />
             ))}
-            <div style={{ position:'absolute', right:20, bottom:8, fontSize:9, color:t.fg, opacity:0.1, zIndex:12 }}>
+            <div style={{ position:'absolute', right:20, bottom:8, fontSize:9, color:t.fg, opacity:0.1, zIndex:6 }}>
               ContentOS
             </div>
           </div>
