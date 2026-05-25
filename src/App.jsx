@@ -160,6 +160,35 @@ const BRAND_TONE_OPTIONS = [
   'Other',
 ]
 
+const GENERATION_GOALS = [
+  'Build Trust',
+  'Explain Benefits',
+  'Premium Brand Look',
+  'Comparison / Differentiation',
+  'Launch New Product',
+  'Improve Conversion',
+]
+
+const OUTPUT_STYLES = [
+  'Premium',
+  'Clean',
+  'Human Lifestyle',
+  'Product Focused',
+  'Conversion Focused',
+]
+
+const DEFAULT_SECTION_FLOW = [
+  'Hero Banner',
+  'Problem Solution Section',
+  'Benefit Section',
+  'Feature Section',
+  'Lifestyle Section',
+  'Trust Section',
+  'Comparison Section',
+  'FAQ Section',
+  'CTA Section',
+]
+
 const CATEGORY_QUESTIONS = {
   'Food & Grocery': {
     targetCustomer: 'Who is the target buyer?',
@@ -799,7 +828,7 @@ function StepCard({ stepNum, label, done, children }) {
         <span style={{ width: 22, height: 22, borderRadius: '50%', background: done ? '#1D6B45' : '#EF4444', color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {done ? '✓' : stepNum}
         </span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: C.tx }}>STEP {stepNum} — {label}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: C.tx }}>{stepNum ? `STEP ${stepNum} — ${label}` : label}</span>
         <span style={{ fontSize: 10, color: done ? '#1D6B45' : '#EF4444', marginLeft: 'auto', fontWeight: 600 }}>{done ? '완료' : '필수'}</span>
       </div>
       <div style={{ padding: '14px 16px 6px' }}>{children}</div>
@@ -1203,6 +1232,11 @@ export default function App() {
   const [templateVariant, setTemplateVariant] = useState('hero_01')
   const [sizePreset, setSizePreset] = useState('amazon_standard_module')
   const [generateMode, setGenerateMode] = useState('Fast Draft')
+  const [generationGoal, setGenerationGoal] = useState('Improve Conversion')
+  const [outputStyle, setOutputStyle] = useState('Premium')
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [generateAllSectionImages, setGenerateAllSectionImages] = useState(false)
+  const [manualSectionSelection, setManualSectionSelection] = useState(false)
   const [targetCustomer, setTargetCustomer] = useState('')
   const [customerPainPoint, setCustomerPainPoint] = useState('')
   const [buyingMotivation, setBuyingMotivation] = useState('')
@@ -1264,8 +1298,7 @@ export default function App() {
     productCategory,
     sharedInput,
     platform,
-    sectionType,
-    templateVariant,
+    generationGoal,
     targetCustomer,
     customerPainPoint,
     buyingMotivation,
@@ -1278,13 +1311,13 @@ export default function App() {
   const categoryQuestions = CATEGORY_QUESTIONS[productCategory] || CATEGORY_QUESTIONS.Other
   const selectedCategoryText = [productCategory, productCategoryDetail.trim()].filter(Boolean).join(' - ')
   const step1Done = !!(productName.trim() && productCategory.trim() && sharedInput.trim())
-  const step2Done = !!(platform && sectionMode)
-  const step3Done = !!(sectionType && templateVariant)
-  const step4Done = !missingFields.some(k => ['targetCustomer','customerPainPoint','buyingMotivation','productBenefits'].includes(k))
+  const step2Done = !!(platform && generationGoal)
+  const step3Done = !missingFields.some(k => ['targetCustomer','customerPainPoint','buyingMotivation','productBenefits'].includes(k))
+  const allDone = missingFields.length === 0
+  const step4Done = allDone
   const step5Done = true
   const step6Done = true
   const step7Done = true
-  const allDone = missingFields.length === 0
 
   // 탭별 결과
   const [tabResults, setTabResults] = useState(() => {
@@ -1405,6 +1438,11 @@ export default function App() {
     setTemplateVariant('hero_01')
     setSizePreset('amazon_standard_module')
     setGenerateMode('Fast Draft')
+    setGenerationGoal('Improve Conversion')
+    setOutputStyle('Premium')
+    setAdvancedOpen(false)
+    setGenerateAllSectionImages(false)
+    setManualSectionSelection(false)
     setTargetCustomer('')
     setCustomerPainPoint('')
     setBuyingMotivation('')
@@ -1447,6 +1485,12 @@ export default function App() {
         selectedCategoryText && `Product Category: ${selectedCategoryText}`,
         `Product Description: ${sharedInput.trim()}`,
         productImgs.length > 0 && `Product Photo Uploads: ${productImgs.length} uploaded image(s). Treat uploaded product photos as the source of truth for product shape, color, packaging, material, and visual identity.`,
+        `Platform: ${platform}`,
+        `Primary Goal: ${generationGoal}`,
+        `Output Style: ${outputStyle}`,
+        `Generation Target: Generate a complete commerce section set, not one selected section.`,
+        `Recommended Base Flow: ${DEFAULT_SECTION_FLOW.join(' > ')}`,
+        manualSectionSelection && `Manual Advanced Section Hint: prioritize ${sectionType} with template ${templateVariant}, but still produce a complete section set.`,
         targetCustomer && `Target Customer: ${targetCustomer.trim()}`,
         customerPainPoint && `Customer Pain Point: ${customerPainPoint.trim()}`,
         buyingMotivation && `Buying Motivation: ${buyingMotivation.trim()}`,
@@ -1464,6 +1508,8 @@ export default function App() {
 - ${categoryQuestions.differentiation}: ${quiz.differentiator.trim() || '(not provided)'}`,
         'If any input is Korean, translate it internally into natural English before writing copy or image prompts.',
         'Final section copy must be English. Image prompts must be English.',
+        'AI must decide the final section sequence and template fit from product category, platform, goal, and tone.',
+        'Output 5-9 sections using the required [SECTION n - Section Name] format. Start with Hero and end with CTA. Include or exclude sections based on the product and goal.',
       ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
       const apiProductImgs = productImgs.slice(0, generateMode === 'Multi Concept' ? 1 : 2)
@@ -1478,8 +1524,8 @@ export default function App() {
         ...quiz,
         platform,
         sectionMode,
-        sectionType,
-        templateVariant,
+        sectionType: manualSectionSelection ? sectionType : 'AI-selected full section set',
+        templateVariant: manualSectionSelection ? templateVariant : 'AI-selected per section',
         productName,
         productCategory: selectedCategoryText,
         targetCustomer,
@@ -1489,6 +1535,8 @@ export default function App() {
         productFeatures,
         brandTone: [brandToneInput, brandToneDetail.trim()].filter(Boolean),
         differentiation: quiz.differentiator,
+        generationGoal,
+        outputStyle,
       }
       const sysBase = getSys(tid, tone, quizOpts)
       const systemPrompt = hasImgs
@@ -1497,27 +1545,29 @@ export default function App() {
       const optionCount = generateMode === 'Multi Concept' ? 3 : 1
       const optionTexts = []
       for (let i = 0; i < optionCount; i++) {
-        const variant = availableTemplates[i % availableTemplates.length] || templateVariant
+        const variant = manualSectionSelection ? (availableTemplates[i % availableTemplates.length] || templateVariant) : 'AI-selected per section'
         const concept = CONCEPT_DIRECTIONS[i] || CONCEPT_DIRECTIONS[0]
         const optionPrompt = optionCount === 1
-          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 Design Concept, 1 Copy Direction, and 1 Image Direction for quick testing and minimum API cost.\nProduct Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
+          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 complete full section set with one coherent copy direction and one practical image direction. Generate the full flow from Hero to CTA. Use only 1-2 representative image directions; remaining sections can use upload slots or placeholders to control cost.\nProduct Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
           : `${userPrompt}
 
 Design Generation Mode: Multi Concept
 ${concept.label} - ${concept.name}
+- Generate one complete full section set for this concept, from Hero to CTA.
+- Choose a section flow that fits this concept, the product category, platform, goal, and tone.
 - Layout Direction: ${concept.layout}
 - Copy Direction: ${concept.copy}
 - Image Direction: ${concept.image}
-- Template: ${variant}
+- Template Selection: ${variant}
 - Product Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}
 
-This concept must differ from the other options in at least one of: Layout, Copy, or Image Style.`
+This concept must differ from the other options in section flow and at least one of: Layout, Copy, or Image Style.`
         const optionText = await generateContent({
           systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }) + (hasImgs ? '\n\nUploaded product photos are the source of truth. Analyze the uploaded images and preserve the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign or invent a different product. Use AI-generated imagery for backgrounds, lifestyle scenes, close-up context, supporting detail shots, or product-photo placement direction.' : ''),
           userPrompt: optionPrompt,
           images: hasImgs ? apiProductImgs : [],
           model: 'gpt-4o',
-          maxTokens: tid === 'detail' ? 4000 : 2000,
+          maxTokens: tid === 'detail' ? 7000 : 2000,
         })
         optionTexts.push(optionCount === 1 ? optionText : `▼ ${concept.label} - ${concept.name}\n\n${optionText}`)
       }
@@ -1530,22 +1580,31 @@ This concept must differ from the other options in at least one of: Layout, Copy
       if (tid === 'detail') {
         setImageGenStatus('')
         const preset = SIZE_PRESETS[sizePreset] || SIZE_PRESETS.amazon_standard_module
-        const parsed = parseSections(text).map((s, i) => ({
-          ...s,
-          title: generateMode === 'Multi Concept' ? `${CONCEPT_DIRECTIONS[i]?.label || 'Option'} - ${CONCEPT_DIRECTIONS[i]?.name || 'Concept'}` : s.title,
-          canvas: { preset: sizePreset, ...preset },
-          imageStrategy: generateMode === 'Multi Concept'
-            ? `${CONCEPT_DIRECTIONS[i]?.label || 'Option'} - ${CONCEPT_DIRECTIONS[i]?.name || 'Concept'}: ${CONCEPT_DIRECTIONS[i]?.image || ''}`
-            : 'Fast Draft: one practical commercial product image direction, using uploaded product photos as source of truth when provided.',
-          secImg: productImgs[0] || s.secImg,
-          uploadedProductPhotos: productImgs,
-          productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
-        }))
+        const parsed = optionTexts.flatMap((optionText, optionIdx) => {
+          const concept = CONCEPT_DIRECTIONS[optionIdx] || CONCEPT_DIRECTIONS[0]
+          return parseSections(optionText).map((s, sectionIdx) => ({
+            ...s,
+            title: s.title || s.sectionType,
+            conceptLabel: generateMode === 'Multi Concept' ? `${concept.label} - ${concept.name}` : 'Full Section Set',
+            conceptIndex: optionIdx,
+            sectionSetPosition: sectionIdx + 1,
+            canvas: { preset: sizePreset, ...preset },
+            imageStrategy: generateMode === 'Multi Concept'
+              ? `${concept.label} - ${concept.name}: ${concept.image}`
+              : 'Fast Draft: one practical commercial product image direction, using uploaded product photos as source of truth when provided.',
+            secImg: productImgs[0] || s.secImg,
+            uploadedProductPhotos: productImgs,
+            productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
+          }))
+        })
         if (autoGenerateImages) {
-          const generated = await generateSectionImages(parsed, setImageGenStatus, {
+          const imageTargets = generateAllSectionImages
+            ? parsed
+            : parsed.map(s => (s.sectionSetPosition <= 2 ? s : { ...s, imagePrompt: '' }))
+          const generated = await generateSectionImages(imageTargets, setImageGenStatus, {
             productName,
             productCategory: selectedCategoryText,
-            sectionType,
+            sectionType: 'Full Section Set',
             uploadedProductPhoto: productImgs.length > 0,
           })
           saveDetailData(generated)
@@ -1713,20 +1772,27 @@ This concept must differ from the other options in at least one of: Layout, Copy
           </StepCard>
 
           {/* ── STEP 2: Platform and section mode ── */}
-          <StepCard stepNum={2} label="Platform & Section Mode" done={step2Done}>
+          <StepCard stepNum={2} label="Platform & Goal" done={step2Done}>
             <SubQ label="Platform">
               <OptionBtns options={PLATFORMS} value={platform} onChange={setPlatform} />
             </SubQ>
-            <SubQ label="Section Type Mode">
-              <OptionBtns options={SECTION_MODES} value={sectionMode} onChange={setSectionMode} />
-              <p style={{ margin:'8px 0 0', fontSize:11, color:C.fa, lineHeight:1.65 }}>
-                Static Section is optimized for Amazon A+ PNG export. Interactive Section is designed for Shopify blocks such as tabs, accordion, carousel, and step navigation.
-              </p>
+            <SubQ label="Goal">
+              <OptionBtns options={GENERATION_GOALS} value={generationGoal} onChange={setGenerationGoal} />
+            </SubQ>
+            <SubQ label="Output Style">
+              <OptionBtns options={OUTPUT_STYLES} value={outputStyle} onChange={setOutputStyle} />
             </SubQ>
           </StepCard>
 
           {/* ── STEP 3: Section and template ── */}
-          <StepCard stepNum={3} label="Section & Template" done={step3Done}>
+          <div style={{ marginBottom: 10 }}>
+            <button onClick={() => setAdvancedOpen(o => !o)}
+              style={{ width:'100%', padding:'12px 16px', borderRadius:12, border:`1.5px solid ${C.bd}`, background:C.sur, color:C.tx, fontSize:13, fontWeight:800, textAlign:'left', cursor:'pointer' }}>
+              Advanced Settings {advancedOpen ? '▲' : '▼'}
+            </button>
+          </div>
+          {advancedOpen && (
+          <StepCard stepNum={0} label="Advanced Settings" done={true}>
             <SubQ label="Section">
               <OptionBtns options={availableSectionTypes} value={sectionType} onChange={setSectionType} />
             </SubQ>
@@ -1748,7 +1814,7 @@ This concept must differ from the other options in at least one of: Layout, Copy
                 })}
               </div>
             </SubQ>
-            <SubQ label="Generate Mode">
+            {false && <SubQ label="Generate Mode">
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:8 }}>
                 {[
                   { key:'Fast Draft', title:'Fast Draft', desc:'1 Design Concept · 1 Copy Direction · 1 Image Direction', sub:'빠른 테스트용 / 비용 최소화' },
@@ -1775,11 +1841,12 @@ This concept must differ from the other options in at least one of: Layout, Copy
                   ))}
                 </div>
               )}
-            </SubQ>
+            </SubQ>}
           </StepCard>
+          )}
 
           {/* ── STEP 4: Conversion context ── */}
-          <StepCard stepNum={4} label="Conversion Context" done={step4Done}>
+          <StepCard stepNum={3} label="Customer & Offer" done={step3Done}>
             {triedGenerate && !step4Done && (
               <div style={{ padding:'10px 12px', background:'#fff7ed', border:'1px solid #fed7aa', borderRadius:9, color:'#c2410c', fontSize:12, fontWeight:700, marginBottom:12 }}>
                 Please complete all required fields before generating your section.
@@ -1857,6 +1924,46 @@ This concept must differ from the other options in at least one of: Layout, Copy
             </SubQ>
           </StepCard>
 
+          <StepCard stepNum={4} label="Generate" done={step4Done}>
+            <SubQ label="Generation Mode">
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:8 }}>
+                {[
+                  { key:'Fast Draft', title:'Fast Draft', desc:'1 full section set', sub:'Text/layout first, 1-2 representative images to control cost' },
+                  { key:'Multi Concept', title:'Multi Concept', desc:'3 full section set directions', sub:'Higher cost, better for Fiverr/client presentation' },
+                ].map(mode => {
+                  const on = generateMode === mode.key
+                  return (
+                    <button key={mode.key} onClick={() => setGenerateMode(mode.key)}
+                      style={{ padding:'12px 14px', borderRadius:10, border:`2px solid ${on?'#1D6B45':C.bd}`, background:on?'#F0FDF4':C.sur, textAlign:'left', cursor:'pointer' }}>
+                      <div style={{ fontSize:13, fontWeight:800, color:on?'#1D6B45':C.tx }}>{mode.title}</div>
+                      <div style={{ fontSize:11, color:C.mu, lineHeight:1.5, marginTop:4 }}>{mode.desc}</div>
+                      <div style={{ fontSize:10.5, color:C.fa, marginTop:4 }}>{mode.sub}</div>
+                    </button>
+                  )
+                })}
+              </div>
+              {generateMode === 'Multi Concept' && (
+                <div style={{ marginTop:8, display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:6 }}>
+                  {CONCEPT_DIRECTIONS.map(c => (
+                    <div key={c.label} style={{ padding:'8px 10px', border:`1px solid ${C.bd}`, borderRadius:8, background:C.alt }}>
+                      <div style={{ fontSize:11, fontWeight:800, color:C.tx }}>{c.label}</div>
+                      <div style={{ fontSize:10.5, color:C.mu, marginTop:2 }}>{c.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SubQ>
+            <SubQ label="Image Cost Control">
+              <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
+                <input type="checkbox" checked={generateAllSectionImages} onChange={e => setGenerateAllSectionImages(e.target.checked)} style={{ width:16, height:16, accentColor:'#1D6B45' }} />
+                Generate images for all sections
+              </label>
+              <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
+                Off by default. ContentOS generates only representative images and uses upload slots/placeholders for the rest.
+              </p>
+            </SubQ>
+          </StepCard>
+
           {false && <StepCard stepNum={5} label="기획 방식 — 섹션 구성 순서 결정" done={step5Done}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
               {PLANNING_STYLES.map(ps => {
@@ -1885,7 +1992,7 @@ This concept must differ from the other options in at least one of: Layout, Copy
           {/* ── Generate section ── */}
           <div style={{ background: '#EFF6FF', borderRadius: 16, border: `1.5px solid ${allDone ? '#BFDBFE' : '#FECACA'}`, overflow: 'hidden', marginBottom: 12, boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
             <div style={{ padding: '10px 16px', background: '#DBEAFE', borderBottom: '1px solid #BFDBFE' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Commerce Section</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Full Section Set</span>
             </div>
             <div style={{ display: 'none', gridTemplateColumns: `repeat(${TASKS.length},1fr)`, gap: 8, padding: '10px 14px', borderBottom: `1px solid ${C.bd}` }}>
               {TASKS.map(t => {
@@ -1922,13 +2029,13 @@ This concept must differ from the other options in at least one of: Layout, Copy
             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {allDone
-                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — generate a {platform} {sectionMode}</p>
+                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — AI will generate a full {platform} section set</p>
                   : <p style={{ fontSize: 11, color: '#EF4444', margin: 0 }}>미완료: {incompletedSteps.join(', ')}</p>
                 }
               </div>
               <button onClick={run} disabled={loading}
                 style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: loading ? '#ECEAE5' : C.tx, color: loading ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
-                {loading ? <><Spin />Generating…</> : `✦ Generate ${sectionType}`}
+                {loading ? <><Spin />Generating…</> : '✦ Generate Full Section Set'}
               </button>
             </div>
           </div>

@@ -477,7 +477,7 @@ ${ctx}
 AI프롬프트: (English only, commercial product photography or lifestyle photography, ultra realistic, professional advertising photography, real surface texture, natural imperfections, studio lighting or natural lighting, DSLR quality, product-focused composition, no text, no watermark, no invented logo, --no illustration, cartoon, CGI, plastic texture, AI glow, overprocessed HDR, unrealistic hands, fake logo, watermark, typography)`
 
   if (id === 'detail') return `You are a senior Amazon A+ Content and Shopify product-page section designer.
-Your job is to generate one reusable commerce section, not a full Korean product detail page.
+Your job is to generate a reusable full commerce section set, not a single manually selected section and not a Korean product detail page.
 
 Current product-page target:
 - Platform: ${platform}
@@ -498,7 +498,8 @@ Strategic rules:
 - User input may be Korean or English. Translate Korean inputs internally into natural English before writing.
 - Final visible copy must always be English.
 - Image prompts must always be English.
-- Generate a single high-quality section that could be sold as a Fiverr deliverable.
+- Generate a high-quality full section set that could be sold as a Fiverr deliverable.
+- The user should not need to choose Hero, Benefit, Feature, or templates manually. You must recommend the section flow and template fit from product category, platform, goal, tone, and product facts.
 - Do not write Korean Smartstore copy.
 - Do not generate blog, card news, SNS, Naver, Instagram, Facebook, or Threads content.
 - Copy must feel like premium US DTC brand / Amazon A+ / Shopify premium theme copy.
@@ -513,6 +514,7 @@ Section architecture:
 - For Interactive Sections, each point must represent a Block state.
 - For tabs, accordions, carousels, before/after, reviews, or step navigation, explain each Block as content that changes when clicked.
 - Still output using the required section format below so the current editor can render it.
+- Output 5-9 sections. Start with a Hero-style section and end with a CTA-style section. Use sections such as Problem/Desire, Benefit, Feature, Lifestyle, Trust, Comparison, FAQ, Brand Story, and CTA only when they fit the product and goal.
 
 Image direction:
 - Image prompts are internal only and must never instruct text inside the image.
@@ -543,7 +545,9 @@ Template: ${templateVariant}
 
 ▼ 섹션 구성
 
-${commerceSection}`
+Repeat this structure for each section in the full set:
+
+${commerceSection.replace('[SECTION 1 -', '[SECTION n -')}`
 
   // 상세페이지
   const customBlock = _buildCustomBlock(opts)
