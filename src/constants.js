@@ -452,6 +452,7 @@ ${ctx}
     templateVariant = 'hero_01',
     productName = '',
     productCategory = '',
+    productSubCategory = '',
     targetCustomer = '',
     customerPainPoint = '',
     buyingMotivation = '',
@@ -486,6 +487,7 @@ Current product-page target:
 - Template variant: ${templateVariant}
 - Product name: ${productName || '(provided by user)'}
 - Product category: ${productCategory || '(translate/infer from product name and description)'}
+- Product subcategory: ${productSubCategory || '(infer from product category and description)'}
 - Target customer: ${targetCustomer || '(infer from product facts)'}
 - Customer pain point: ${customerPainPoint || '(infer carefully, do not exaggerate)'}
 - Buying motivation: ${buyingMotivation || '(infer carefully)'}

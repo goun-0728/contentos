@@ -121,20 +121,36 @@ const CONCEPT_DIRECTIONS = [
   },
 ]
 
-const PRODUCT_CATEGORIES = [
-  'Beauty & Personal Care',
-  'Health & Supplement',
-  'Food & Grocery',
-  'Home & Kitchen',
-  'Pet Supplies',
-  'Baby & Kids',
-  'Fashion & Apparel',
-  'Electronics & Tech',
-  'Sports & Outdoor',
-  'Tools & Hardware',
-  'Digital Product',
-  'Other',
-]
+const CATEGORY_TREE = {
+  'Beauty & Personal Care': ['Skincare', 'Hair Care', "Men's Grooming", 'Makeup', 'Body Care', 'Fragrance', 'Oral Care'],
+  'Health & Wellness': ['Supplements', 'Vitamins', 'Protein / Fitness Nutrition', 'Sleep Care', 'Digestive Health', 'Joint Care', "Women's Health", "Men's Health"],
+  'Food & Grocery': ['Fresh Fruit', 'Packaged Food', 'Snacks', 'Beverage', 'Coffee / Tea', 'Sauce / Seasoning', 'Frozen Food', 'Health Food', 'Gift Food'],
+  'Home & Kitchen': ['Kitchen Appliances', 'Cookware', 'Storage', 'Cleaning', 'Bedding', 'Bathroom', 'Home Decor'],
+  'Pet Supplies': ['Dog Food / Treats', 'Cat Food / Treats', 'Pet Grooming', 'Pet Toys', 'Pet Bed / House', 'Pet Health'],
+  'Baby & Kids': ['Baby Care', 'Kids Bedding', 'Toys', 'School Supplies', 'Kids Clothing', 'Feeding'],
+  'Fashion & Apparel': ["Women's Clothing", "Men's Clothing", 'Shoes', 'Bags', 'Accessories', 'Activewear'],
+  'Electronics & Tech': ['Phone Accessories', 'Smart Devices', 'Audio', 'Home Electronics', 'Gaming', 'Office Tech'],
+  'Sports & Outdoor': ['Fitness Equipment', 'Camping', 'Outdoor Gear', 'Cycling', 'Golf', 'Running'],
+  'Tools & Hardware': ['Hand Tools', 'Power Tools', 'Safety Gear', 'Automotive', 'DIY Supplies'],
+  'Digital Product': ['App', 'SaaS', 'Template', 'Online Course', 'E-book'],
+  Other: ['Custom Category Input'],
+}
+const PRODUCT_CATEGORIES = Object.keys(CATEGORY_TREE)
+
+const IMAGE_SCENE_SUGGESTIONS = {
+  'Fresh Fruit': ['orchard / farm origin', 'fresh cut close-up', 'gift box presentation', 'family table scene', 'premium grocery style'],
+  "Men's Grooming": ['bathroom counter', 'clean shaving scene', 'close-up razor detail', 'premium male grooming', 'studio product shot'],
+  'Kitchen Appliances': ['modern kitchen', 'family meal preparation', 'product on countertop', 'cooked food results', 'lifestyle cooking scene'],
+  Supplements: ['clean countertop', 'morning routine', 'active lifestyle', 'ingredient flat lay', 'clinical trust visual'],
+  'Dog Food / Treats': ['pet using product', 'owner interaction', 'safe ingredient close-up', 'warm home lifestyle', 'feeding moment'],
+  'Cat Food / Treats': ['pet using product', 'owner interaction', 'safe ingredient close-up', 'warm home lifestyle', 'feeding moment'],
+  'Pet Grooming': ['pet grooming moment', 'owner interaction', 'safe material close-up', 'warm bathroom or home scene', 'before-after cleanliness cue'],
+  Skincare: ['bathroom vanity', 'skin routine scene', 'texture macro', 'ingredient flat lay', 'clinical clean visual'],
+  'Hair Care': ['bathroom shelf', 'hair routine scene', 'texture close-up', 'natural shine result', 'salon-inspired visual'],
+  'Home Electronics': ['modern home interior', 'product in use', 'clean countertop or desk', 'performance cue', 'lifestyle convenience scene'],
+  'Phone Accessories': ['desk setup', 'commute use case', 'device compatibility visual', 'clean tech product shot', 'hands using accessory'],
+  default: ['premium studio product shot', 'realistic lifestyle scene', 'detail close-up', 'trust/proof visual', 'clean CTA product scene'],
+}
 
 const TARGET_CUSTOMER_OPTIONS = [
   'Busy parents',
@@ -163,6 +179,7 @@ const BRAND_TONE_OPTIONS = [
 const CATEGORY_LABELS = {
   'Beauty & Personal Care': '뷰티 / 퍼스널케어',
   'Health & Supplement': '건강기능식품 / 보충제',
+  'Health & Wellness': '건강 / 웰니스',
   'Food & Grocery': '식품 / 식료품',
   'Home & Kitchen': '홈 / 주방',
   'Pet Supplies': '반려동물용품',
@@ -262,7 +279,7 @@ const CATEGORY_QUESTIONS = {
     productFeatures: '민감성 피부, 데일리용, 프리미엄 케어, 전문가용 중 어디에 가깝나요?',
     differentiation: '신뢰 요소는 무엇인가요? 피부과 테스트, 클린 성분, 크루얼티 프리, 임상적 톤 등',
   },
-  'Health & Supplement': {
+  'Health & Wellness': {
     targetCustomer: '타겟 고객은 누구인가요?',
     customerPainPoint: '고객의 건강 목표는 무엇인가요?',
     buyingMotivation: '해결하고 싶은 일상 문제나 불편함은 무엇인가요?',
@@ -1024,16 +1041,19 @@ async function generateSectionImages(sections, onProgress, context = {}) {
     onProgress?.(`AI 이미지 생성 중 (${i + 1}/${targets.length})`)
 
     try {
+      const imageBrief = createImageBrief(target, context)
+      const finalImagePrompt = strengthenImagePrompt(target.imagePrompt, {
+        ...context,
+        sectionType: target.sectionType || context.sectionType,
+        imageStrategy: target.imageStrategy,
+        imageBrief,
+      })
       const image = await generateImage({
-        prompt: strengthenImagePrompt(target.imagePrompt, {
-          ...context,
-          sectionType: target.sectionType || context.sectionType,
-          imageStrategy: target.imageStrategy,
-        }),
+        prompt: finalImagePrompt,
         size: '1024x1536',
         quality: 'medium',
       })
-      next[idx] = { ...next[idx], secImg: image, imageStatus: 'generated-ad-image' }
+      next[idx] = { ...next[idx], secImg: image, imageStatus: 'generated-ad-image', imageBrief, finalImagePrompt }
     } catch (e) {
       next[idx] = { ...next[idx], imageStatus: 'failed', imageError: e.message }
       console.error(e)
@@ -1044,7 +1064,79 @@ async function generateSectionImages(sections, onProgress, context = {}) {
   return next
 }
 
-function strengthenImagePrompt(prompt, { productName, productCategory, sectionType, uploadedProductPhoto, imageStrategy }) {
+function createImageBrief(section, context = {}) {
+  const subCategory = context.productSubCategory || ''
+  const scenes = IMAGE_SCENE_SUGGESTIONS[subCategory]
+    || IMAGE_SCENE_SUGGESTIONS[context.productCategory]
+    || IMAGE_SCENE_SUGGESTIONS.default
+  const sectionType = section.sectionType || context.sectionType || 'Commerce Section'
+  const sec = sectionType.toLowerCase()
+  const recommendedScene = sec.includes('hero') ? scenes[0]
+    : sec.includes('benefit') ? scenes[1] || scenes[0]
+      : sec.includes('feature') ? scenes[2] || scenes[0]
+        : sec.includes('lifestyle') ? scenes[3] || scenes[0]
+          : sec.includes('trust') ? scenes[4] || scenes[0]
+            : sec.includes('cta') ? 'clean purchase-focused product scene'
+              : scenes[0]
+  const cameraStyle = sec.includes('feature') || sec.includes('detail')
+    ? '100mm macro lens, true-to-life texture, crisp detail'
+    : sec.includes('lifestyle')
+      ? 'Sony A7R V, 35mm lens or 85mm lens, natural perspective'
+      : 'Canon EOS R5, premium e-commerce advertising composition'
+  const lightingStyle = sec.includes('lifestyle') ? 'natural window light with realistic shadows' : 'professional studio softbox lighting with realistic shadows'
+  const lower = `${context.productName || ''} ${context.productCategory || ''} ${subCategory}`.toLowerCase()
+  const negativeObjects = ['text inside image', 'fake logo', 'watermark', 'wrong product category', 'unrelated product', 'AI glow', 'CGI look', 'plastic texture']
+  if (!lower.includes('phone') && !lower.includes('smart')) negativeObjects.push('smartphone', 'phone')
+  if (lower.includes('razor') || lower.includes('shaver') || lower.includes('면도기')) negativeObjects.push('electric toothbrush', 'remote control', 'computer mouse')
+  if (lower.includes('mango') || lower.includes('fruit') || lower.includes('망고')) negativeObjects.push('cosmetic bottle', 'electronics')
+  if (lower.includes('rice cooker') || lower.includes('밥솥')) negativeObjects.push('air fryer', 'speaker', 'helmet')
+  return {
+    productName: context.productName || '',
+    category: context.productCategory || '',
+    subCategory,
+    productDescription: context.productDescription || '',
+    targetCustomer: context.targetCustomer || '',
+    painPoint: context.customerPainPoint || '',
+    buyingMotivation: context.buyingMotivation || '',
+    keyBenefits: context.productBenefits || '',
+    keyFeatures: context.productFeatures || '',
+    differentiation: context.differentiation || '',
+    brandTone: context.brandTone || '',
+    referenceUrl: context.referenceUrl || '',
+    sectionRole: sectionType,
+    recommendedScene,
+    cameraStyle,
+    lightingStyle,
+    productPhotoUsage: context.uploadedProductPhoto
+      ? 'Use uploaded product photo as source of truth for form, color, label, package ratio, material, and visual identity. Generate a new ad image, not a simple copy.'
+      : 'No uploaded product photo. Create a realistic temporary product placeholder and make it easy to replace with the real product photo.',
+    negativeObjects,
+  }
+}
+
+function summarizeBrief(brief) {
+  return Object.entries(brief)
+    .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v || '(not provided)'}`)
+    .join('\n')
+}
+
+function checkInputReflection(sections, context = {}) {
+  const allCopy = sections.map(s => [s.mainCopy, s.subCopy, s.description, ...(s.points || [])].filter(Boolean).join(' ')).join(' ').toLowerCase()
+  const allPrompts = sections.map(s => [s.imagePrompt, s.finalImagePrompt, JSON.stringify(s.imageBrief || {})].filter(Boolean).join(' ')).join(' ').toLowerCase()
+  const has = v => !String(v || '').trim() || allCopy.includes(String(v).trim().toLowerCase().split(/\s+/)[0])
+  const promptHas = v => !String(v || '').trim() || allPrompts.includes(String(v).trim().toLowerCase().split(/\s+/)[0])
+  const warnings = []
+  if (!has(context.productName)) warnings.push('제품명이 카피에 약하게 반영되었습니다.')
+  if (!promptHas(context.productCategory) && !promptHas(context.productSubCategory)) warnings.push('카테고리가 이미지 기획에 약하게 반영되었습니다.')
+  if (!promptHas(context.targetCustomer)) warnings.push('타겟 고객이 이미지 장면에 약하게 반영되었습니다.')
+  if (!has(context.buyingMotivation)) warnings.push('구매 이유가 카피에 약하게 반영되었습니다.')
+  if (context.differentiation && !has(context.differentiation)) warnings.push('차별점이 섹션 카피에 약하게 반영되었습니다.')
+  if (context.brandTone && !promptHas(context.brandTone)) warnings.push('브랜드 톤이 이미지 스타일에 약하게 반영되었습니다.')
+  return warnings
+}
+
+function strengthenImagePrompt(prompt, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, sectionType, uploadedProductPhoto, imageStrategy, imageBrief }) {
+  const brief = imageBrief || createImageBrief({ sectionType }, { productName, productCategory, productSubCategory, productDescription, targetCustomer, customerPainPoint, buyingMotivation, productBenefits, productFeatures, differentiation, brandTone, referenceUrl, uploadedProductPhoto })
   const category = productCategory?.trim() || 'infer the exact product category from the product name'
   const name = productName?.trim() || 'the specified product'
   const lower = `${name} ${category}`.toLowerCase()
@@ -1083,7 +1175,9 @@ function strengthenImagePrompt(prompt, { productName, productCategory, sectionTy
   return [
     `PRODUCT IDENTITY LOCK: The product is "${name}".`,
     `PRODUCT CATEGORY: ${category}.`,
+    brief.subCategory ? `PRODUCT SUBCATEGORY: ${brief.subCategory}.` : '',
     `SECTION CONTEXT: ${sectionType}.`,
+    `IMAGE BRIEF:\n${summarizeBrief(brief)}`,
     imageStrategy ? `IMAGE STRATEGY: ${imageStrategy}.` : '',
     'PRODUCT FIDELITY: preserve product form, color, label direction, packaging ratio, material, and visual identity. Do not invent a different product.',
     uploadedProductPhoto
@@ -1118,7 +1212,7 @@ function parseExtraSection(text, typeInfo) {
 }
 
 /* ── 상세페이지 결과 뷰 ─────────────────────────────── */
-function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
+function DetailView({ result, savedSects, onSectsChange, productInput, quiz, debugMode = false }) {
   const top    = parseBlocks(result)
   const rep    = top.find(b => b.title === '기획 보고서')
   const ptMeta = top.find(b => b.title.includes('Page Title'))
@@ -1229,15 +1323,21 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
     const sec = sects[selectedIdx]
     setImageBusyIdx(selectedIdx)
     try {
-      const prompt = strengthenImagePrompt(sec.imagePrompt || `${sec.sectionType || 'Amazon A+ module'} commercial advertising image for ${productInput || 'the product'}`, {
-        productName: productInput,
-        productCategory: sec.sectionType,
-        sectionType: sec.sectionType,
+      const ctx = {
+        ...(sec.inputSummary || {}),
+        productName: sec.inputSummary?.productName || productInput,
+        productCategory: sec.inputSummary?.productCategory || sec.sectionType,
         uploadedProductPhoto: !!(sec.originalProductImage || sec.uploadedProductPhotos?.length),
+      }
+      const imageBrief = createImageBrief(sec, ctx)
+      const prompt = strengthenImagePrompt(sec.imagePrompt || `${sec.sectionType || 'Amazon A+ module'} commercial advertising image for ${productInput || 'the product'}`, {
+        ...ctx,
+        sectionType: sec.sectionType,
         imageStrategy: sec.imageStrategy,
+        imageBrief,
       })
       const image = await generateImage({ prompt, size: '1024x1536', quality: 'medium' })
-      upd(selectedIdx, { ...sec, secImg: image, imageStatus: 'regenerated-ad-image', productPhotoMode: 'ai-regenerated' })
+      upd(selectedIdx, { ...sec, secImg: image, imageStatus: 'regenerated-ad-image', productPhotoMode: 'ai-regenerated', imageBrief, finalImagePrompt: prompt })
     } catch (e) {
       upd(selectedIdx, { ...sec, imageStatus: 'failed', imageError: e.message })
     } finally {
@@ -1429,6 +1529,23 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
         </div>
       )}
 
+      {debugMode && sects.length > 0 && (
+        <div style={{ maxWidth:1480, margin:'18px auto 48px', padding:'0 12px' }}>
+          <div style={{ background:'#111827', color:'#E5E7EB', borderRadius:12, padding:16, border:'1px solid #374151' }}>
+            <div style={{ fontSize:13, fontWeight:800, marginBottom:10 }}>Advanced Debug Mode</div>
+            <pre style={{ margin:0, whiteSpace:'pre-wrap', wordBreak:'break-word', fontSize:11, lineHeight:1.7, fontFamily:"'Courier New',monospace" }}>
+{sects.map((s, i) => [
+  `SECTION ${i + 1}: ${s.sectionType}`,
+  `Planning Summary: ${s.mainCopy || ''} / ${s.subCopy || ''}`,
+  `Used Inputs:\n${JSON.stringify(s.inputSummary || {}, null, 2)}`,
+  `imageBrief:\n${JSON.stringify(s.imageBrief || {}, null, 2)}`,
+  `finalImagePrompt:\n${s.finalImagePrompt || s.imagePrompt || ''}`,
+].join('\n')).join('\n\n---\n\n')}
+            </pre>
+          </div>
+        </div>
+      )}
+
       {false && seo && (
         <div style={{ marginTop: 20 }}>
           <Blk title={seo.title} lines={seo.lines} />
@@ -1486,6 +1603,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [productName, setProductName] = useState('')
   const [productCategory, setProductCategory] = useState('')
+  const [productSubCategory, setProductSubCategory] = useState('')
   const [productCategoryDetail, setProductCategoryDetail] = useState('')
   const [platform, setPlatform] = useState('Amazon A+')
   const [sectionMode, setSectionMode] = useState('Static Section')
@@ -1496,6 +1614,7 @@ export default function App() {
   const [generationGoal, setGenerationGoal] = useState('Improve Conversion')
   const [outputStyle, setOutputStyle] = useState('Premium')
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [debugMode, setDebugMode] = useState(false)
   const [generateAllSectionImages, setGenerateAllSectionImages] = useState(false)
   const [manualSectionSelection, setManualSectionSelection] = useState(false)
   const [targetCustomer, setTargetCustomer] = useState('')
@@ -1557,6 +1676,7 @@ export default function App() {
   const requiredFields = {
     productName,
     productCategory,
+    productSubCategory,
     sharedInput,
     platform,
     generationGoal,
@@ -1570,7 +1690,7 @@ export default function App() {
   const fieldBorder = key => `1.5px solid ${isMissing(key) ? '#EF4444' : C.bd}`
 
   const categoryQuestions = CATEGORY_QUESTIONS[productCategory] || CATEGORY_QUESTIONS.Other
-  const selectedCategoryText = [productCategory, productCategoryDetail.trim()].filter(Boolean).join(' - ')
+  const selectedCategoryText = [productCategory, productSubCategory, productCategoryDetail.trim()].filter(Boolean).join(' - ')
   const step1Done = !!(productName.trim() && productCategory.trim() && sharedInput.trim())
   const step2Done = !!(platform && generationGoal)
   const step3Done = !missingFields.some(k => ['targetCustomer','customerPainPoint','buyingMotivation','productBenefits'].includes(k))
@@ -1647,6 +1767,7 @@ export default function App() {
   const [productImgs, setProductImgs] = useState([])
   const [autoGenerateImages, setAutoGenerateImages] = useState(true)
   const [imageGenStatus, setImageGenStatus] = useState('')
+  const [reflectionWarnings, setReflectionWarnings] = useState([])
   const handleProductImgs = async e => {
     const files = Array.from(e.target.files)
     const remaining = 5 - productImgs.length
@@ -1691,6 +1812,7 @@ export default function App() {
   const resetAll = () => {
     setProductName('')
     setProductCategory('')
+    setProductSubCategory('')
     setProductCategoryDetail('')
     setSharedInput('')
     setPlatform('Amazon A+')
@@ -1702,6 +1824,7 @@ export default function App() {
     setGenerationGoal('Improve Conversion')
     setOutputStyle('Premium')
     setAdvancedOpen(false)
+    setDebugMode(false)
     setGenerateAllSectionImages(false)
     setManualSectionSelection(false)
     setTargetCustomer('')
@@ -1740,10 +1863,12 @@ export default function App() {
     setTabLoading(prev => ({ ...prev, [tid]: true }))
     saveResult(tid, '')
     setError('')
+    setReflectionWarnings([])
     try {
       const userPrompt = [
         `Product Name: ${productName.trim()}`,
         selectedCategoryText && `Product Category: ${selectedCategoryText}`,
+        productSubCategory && `Product Subcategory: ${productSubCategory}`,
         `Product Description: ${sharedInput.trim()}`,
         productImgs.length > 0 && `Product Photo Uploads: ${productImgs.length} uploaded image(s). Treat uploaded product photos as the source of truth for product shape, color, packaging, material, and visual identity.`,
         `Platform: ${platform}`,
@@ -1759,7 +1884,11 @@ export default function App() {
         productFeatures && `Product Features: ${productFeatures.trim()}`,
         [brandToneInput, brandToneDetail.trim()].filter(Boolean).length > 0 && `Brand Tone: ${[brandToneInput, brandToneDetail.trim()].filter(Boolean).join(' - ')}`,
         quiz.differentiator && `Differentiation: ${quiz.differentiator.trim()}`,
-        referenceUrl && `Reference URL or Competitor Link: ${referenceUrl.trim()}`,
+        referenceUrl && `Reference URL or Competitor Link / Direction: ${referenceUrl.trim()}`,
+        `Input Reflection Requirements:
+- Section flow must be chosen from product category, subcategory, target customer, buying motivation, pain point, benefits, features, differentiation, brand tone, reference URL, and uploaded product photo availability.
+- Copy must explicitly reflect product name, target customer, buying motivation, at least one key benefit, at least one feature, and differentiation.
+- Image prompts must include product name, category, subcategory, product description, target customer, pain point/desire, buying motivation, benefits, features, differentiation, brand tone, reference direction, and uploaded product photo usage.`,
         `Category-Specific Questions:
 - ${categoryQuestions.targetCustomer}: ${targetCustomer.trim()}
 - ${categoryQuestions.customerPainPoint}: ${customerPainPoint.trim()}
@@ -1789,6 +1918,7 @@ export default function App() {
         templateVariant: manualSectionSelection ? templateVariant : 'AI-selected per section',
         productName,
         productCategory: selectedCategoryText,
+        productSubCategory,
         targetCustomer,
         customerPainPoint,
         buyingMotivation,
@@ -1798,6 +1928,21 @@ export default function App() {
         differentiation: quiz.differentiator,
         generationGoal,
         outputStyle,
+      }
+      const reflectionContext = {
+        productName,
+        productCategory: selectedCategoryText,
+        productSubCategory,
+        productDescription: sharedInput,
+        targetCustomer,
+        customerPainPoint,
+        buyingMotivation,
+        productBenefits,
+        productFeatures,
+        differentiation: quiz.differentiator,
+        brandTone: [brandToneInput, brandToneDetail.trim()].filter(Boolean).join(' - '),
+        referenceUrl,
+        uploadedProductPhoto: productImgs.length > 0,
       }
       const sysBase = getSys(tid, tone, quizOpts)
       const systemPrompt = hasImgs
@@ -1853,6 +1998,7 @@ This concept must differ from the other options in section flow and at least one
             imageStrategy: generateMode === 'Multi Concept'
               ? `${concept.label} - ${concept.name}: ${concept.image}`
               : 'Fast Draft: one practical commercial advertising image direction. Analyze uploaded reference photos for category, product use, buying context, and usage scene when provided.',
+            inputSummary: { ...reflectionContext, productCategoryDetail, uploadedProductPhotoCount: productImgs.length },
             secImg: s.secImg,
             originalProductImage: productImgs[0] || null,
             uploadedProductPhotos: productImgs,
@@ -1864,14 +2010,41 @@ This concept must differ from the other options in section flow and at least one
             ? parsed
             : parsed.map(s => (s.sectionSetPosition <= 2 ? s : { ...s, imagePrompt: '' }))
           const generated = await generateSectionImages(imageTargets, setImageGenStatus, {
-            productName,
-            productCategory: selectedCategoryText,
+            ...reflectionContext,
             sectionType: 'Full Section Set',
-            uploadedProductPhoto: productImgs.length > 0,
           })
-          saveDetailData(generated)
+          const generatedWithBriefs = generated.map(s => {
+            if (s.imageBrief && s.finalImagePrompt) return s
+            const imageBrief = createImageBrief(s, reflectionContext)
+            return {
+              ...s,
+              imageBrief,
+              finalImagePrompt: strengthenImagePrompt(s.imagePrompt || '', {
+                ...reflectionContext,
+                sectionType: s.sectionType,
+                imageStrategy: s.imageStrategy,
+                imageBrief,
+              }),
+            }
+          })
+          setReflectionWarnings(checkInputReflection(generatedWithBriefs, reflectionContext))
+          saveDetailData(generatedWithBriefs)
         } else {
-          saveDetailData(parsed)
+          const withBriefs = parsed.map(s => {
+            const imageBrief = createImageBrief(s, reflectionContext)
+            return {
+              ...s,
+              imageBrief,
+              finalImagePrompt: strengthenImagePrompt(s.imagePrompt || '', {
+                ...reflectionContext,
+                sectionType: s.sectionType,
+                imageStrategy: s.imageStrategy,
+                imageBrief,
+              }),
+            }
+          })
+          setReflectionWarnings(checkInputReflection(withBriefs, reflectionContext))
+          saveDetailData(withBriefs)
         }
         setDetailGenKey(k => k + 1)
       }
@@ -1979,13 +2152,26 @@ This concept must differ from the other options in section flow and at least one
                 {PRODUCT_CATEGORIES.map(cat => {
                   const on = productCategory === cat
                   return (
-                    <button key={cat} onClick={() => setProductCategory(cat)}
+                    <button key={cat} onClick={() => { setProductCategory(cat); setProductSubCategory('') }}
                       style={{ padding:'9px 10px', borderRadius:9, border:`1.5px solid ${isMissing('productCategory') ? '#EF4444' : (on ? '#1D6B45' : C.bd)}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.tx, fontSize:11.5, fontWeight:on?800:650, cursor:'pointer', textAlign:'left' }}>
                       {CATEGORY_LABELS[cat] || cat}
                     </button>
                   )
                 })}
               </div>
+              {productCategory && (
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6, margin:'0 0 8px' }}>
+                  {(CATEGORY_TREE[productCategory] || []).map(sub => {
+                    const on = productSubCategory === sub
+                    return (
+                      <button key={sub} onClick={() => setProductSubCategory(sub)}
+                        style={{ padding:'6px 10px', borderRadius:999, border:`1px solid ${on ? '#1D6B45' : C.bd}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                        {sub}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
               <input value={productCategoryDetail} onChange={e => setProductCategoryDetail(e.target.value)}
                 placeholder="추가 카테고리 설명: 제주산 프리미엄 애플망고 / 민감성 피부용 남성 면도기"
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
@@ -2229,6 +2415,15 @@ This concept must differ from the other options in section flow and at least one
                 기본값은 꺼짐입니다. 비용 절약을 위해 대표 이미지만 생성하고 나머지는 업로드 슬롯 또는 플레이스홀더로 처리합니다.
               </p>
             </SubQ>
+            <SubQ label="Advanced Debug Mode">
+              <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
+                <input type="checkbox" checked={debugMode} onChange={e => setDebugMode(e.target.checked)} style={{ width:16, height:16, accentColor:'#1D6B45' }} />
+                개발자용 디버그 정보 표시
+              </label>
+              <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
+                기본 OFF입니다. ON일 때만 기획 요약, imageBrief, 최종 imagePrompt, 사용 입력값을 결과 하단에서 확인합니다.
+              </p>
+            </SubQ>
           </StepCard>
 
           {false && <StepCard stepNum={5} label="기획 방식 — 섹션 구성 순서 결정" done={step5Done}>
@@ -2314,6 +2509,12 @@ This concept must differ from the other options in section flow and at least one
               시안을 생성하기 전에 필수 입력값을 모두 입력해주세요.
             </div>
           )}
+          {reflectionWarnings.length > 0 && (
+            <div style={{ padding: '12px 15px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 9, fontSize: 13, color: '#92400e', marginBottom: 14, lineHeight:1.7 }}>
+              <strong>반영 체크 경고</strong><br />
+              {reflectionWarnings.map((w, i) => <div key={i}>- {w}</div>)}
+            </div>
+          )}
 
           {/* 로딩 */}
           {loading && (
@@ -2329,7 +2530,7 @@ This concept must differ from the other options in section flow and at least one
           {result && !loading && (
             task.id === 'detail' ? (
               <div ref={resRef}>
-                <DetailView key={detailGenKey} result={result} savedSects={detailData} onSectsChange={saveDetailData} productInput={sharedInput} quiz={quiz} />
+                <DetailView key={detailGenKey} result={result} savedSects={detailData} onSectsChange={saveDetailData} productInput={sharedInput} quiz={quiz} debugMode={debugMode} />
               </div>
             ) : (
               <div ref={resRef} style={{ background: C.sur, borderRadius: 16, border: `1.5px solid ${C.bd}`, boxShadow: '0 4px 28px rgba(0,0,0,0.06)', overflow: 'hidden', animation: 'fi .25s ease' }}>
