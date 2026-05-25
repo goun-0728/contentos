@@ -219,6 +219,36 @@ const CATEGORY_QUESTIONS = {
   },
 }
 
+const MAX_PRODUCT_IMAGE_BYTES = 850 * 1024
+
+function dataUrlBytes(dataUrl) {
+  return Math.ceil((dataUrl || '').length * 0.75)
+}
+
+function compressImageFile(file, maxWidth = 1200, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Failed to read image file.'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('Failed to load image file.'))
+      img.onload = () => {
+        const ratio = Math.min(1, maxWidth / img.width)
+        const width = Math.max(1, Math.round(img.width * ratio))
+        const height = Math.max(1, Math.round(img.height * ratio))
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 const EMPTY_QUIZ = {
   category: '', priceRange: '',
   gender: '', ageGroup: '', purchaseSituation: '',
@@ -1323,14 +1353,22 @@ export default function App() {
   const [productImgs, setProductImgs] = useState([])
   const [autoGenerateImages, setAutoGenerateImages] = useState(true)
   const [imageGenStatus, setImageGenStatus] = useState('')
-  const handleProductImgs = e => {
+  const handleProductImgs = async e => {
     const files = Array.from(e.target.files)
     const remaining = 5 - productImgs.length
-    files.slice(0, remaining).forEach(f => {
-      const fr = new FileReader()
-      fr.onload = ev => setProductImgs(prev => prev.length < 5 ? [...prev, ev.target.result] : prev)
-      fr.readAsDataURL(f)
-    })
+    setError('')
+    for (const f of files.slice(0, remaining)) {
+      try {
+        const compressed = await compressImageFile(f, 1200, 0.75)
+        if (dataUrlBytes(compressed) > MAX_PRODUCT_IMAGE_BYTES) {
+          setError('Uploaded images are too large. Please upload smaller images or allow automatic compression.')
+          continue
+        }
+        setProductImgs(prev => prev.length < 5 ? [...prev, compressed] : prev)
+      } catch (err) {
+        setError(err.message || 'Failed to compress uploaded image.')
+      }
+    }
     e.target.value = ''
   }
 
@@ -1428,6 +1466,14 @@ export default function App() {
         'Final section copy must be English. Image prompts must be English.',
       ].filter(Boolean).join('\n')
       const hasImgs = tid === 'detail' && productImgs.length > 0
+      const apiProductImgs = productImgs.slice(0, generateMode === 'Multi Concept' ? 1 : 2)
+      const imagePayloadBytes = apiProductImgs.reduce((sum, img) => sum + dataUrlBytes(img), 0)
+      if (imagePayloadBytes > 2.4 * 1024 * 1024) {
+        const err = new Error('Uploaded images are too large. Please upload smaller images or allow automatic compression.')
+        err.code = 'PAYLOAD_TOO_LARGE'
+        err.payloadBytes = imagePayloadBytes
+        throw err
+      }
       const quizOpts = {
         ...quiz,
         platform,
@@ -1469,7 +1515,7 @@ This concept must differ from the other options in at least one of: Layout, Copy
         const optionText = await generateContent({
           systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }) + (hasImgs ? '\n\nUploaded product photos are the source of truth. Analyze the uploaded images and preserve the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign or invent a different product. Use AI-generated imagery for backgrounds, lifestyle scenes, close-up context, supporting detail shots, or product-photo placement direction.' : ''),
           userPrompt: optionPrompt,
-          images: hasImgs ? productImgs : [],
+          images: hasImgs ? apiProductImgs : [],
           model: 'gpt-4o',
           maxTokens: tid === 'detail' ? 4000 : 2000,
         })

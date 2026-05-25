@@ -1,6 +1,7 @@
 // src/components/BlogKeywords.jsx
 import React, { useState } from 'react'
 import { C } from '../constants'
+import { parseApiResponse } from '../api/http'
 
 const BLOG_COL = '#1A3FA3'
 const BLOG_LI  = '#EBF1FF'
@@ -37,8 +38,7 @@ export default function BlogKeywords({ onKeywordsChange }) {
     setLoading(true); setError(''); setMaxAlert(false)
     try {
       const res  = await fetch(`/api/naver-keywords?keywords=${encodeURIComponent(main)}`)
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
+      const data = await parseApiResponse(res, '/api/naver-keywords')
 
       const sorted = (data.keywordList || []).slice(0, 20).sort((a, b) =>
         (toNum(b.monthlyPcQcCnt) + toNum(b.monthlyMobileQcCnt)) -
