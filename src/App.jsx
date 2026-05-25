@@ -160,6 +160,45 @@ const BRAND_TONE_OPTIONS = [
   'Other',
 ]
 
+const CATEGORY_LABELS = {
+  'Beauty & Personal Care': '뷰티 / 퍼스널케어',
+  'Health & Supplement': '건강기능식품 / 보충제',
+  'Food & Grocery': '식품 / 식료품',
+  'Home & Kitchen': '홈 / 주방',
+  'Pet Supplies': '반려동물용품',
+  'Baby & Kids': '유아 / 키즈',
+  'Fashion & Apparel': '패션 / 의류',
+  'Electronics & Tech': '전자기기 / 테크',
+  'Sports & Outdoor': '스포츠 / 아웃도어',
+  'Tools & Hardware': '공구 / 하드웨어',
+  'Digital Product': '디지털 상품',
+  Other: '기타',
+}
+
+const TARGET_CUSTOMER_LABELS = {
+  'Busy parents': '바쁜 부모',
+  'Men in their 40s': '40대 남성',
+  'Women in their 30s': '30대 여성',
+  Athletes: '운동하는 사람',
+  'Pet owners': '반려동물 보호자',
+  'Office workers': '직장인',
+  'Gift buyers': '선물 구매자',
+  Other: '직접 입력',
+}
+
+const BRAND_TONE_LABELS = {
+  Premium: '프리미엄',
+  Clinical: '전문적 / 클리니컬',
+  Minimal: '미니멀',
+  Warm: '따뜻한',
+  Natural: '내추럴',
+  Bold: '강렬한',
+  Luxury: '럭셔리',
+  Technical: '기술적',
+  Friendly: '친근한',
+  Other: '직접 입력',
+}
+
 const GENERATION_GOALS = [
   'Build Trust',
   'Explain Benefits',
@@ -177,6 +216,23 @@ const OUTPUT_STYLES = [
   'Conversion Focused',
 ]
 
+const OUTPUT_STYLE_LABELS = {
+  Premium: '프리미엄',
+  Clean: '깔끔한',
+  'Human Lifestyle': '사람이 사용하는 라이프스타일',
+  'Product Focused': '제품 중심',
+  'Conversion Focused': '전환 중심',
+}
+
+const CONCEPT_LABELS_KO = {
+  'Option A': '시안 A',
+  'Option B': '시안 B',
+  'Option C': '시안 C',
+  'Human Lifestyle': '사람이 사용하는 라이프스타일',
+  'Product Only': '제품 단독 중심',
+  'Contextual Scene': '사용 환경 중심',
+}
+
 const DEFAULT_SECTION_FLOW = [
   'Hero Banner',
   'Problem Solution Section',
@@ -191,60 +247,60 @@ const DEFAULT_SECTION_FLOW = [
 
 const CATEGORY_QUESTIONS = {
   'Food & Grocery': {
-    targetCustomer: 'Who is the target buyer?',
-    customerPainPoint: 'When do they usually consume this product?',
-    buyingMotivation: 'What taste, freshness, origin, or ingredient quality should be highlighted?',
-    productBenefits: 'What makes this product different from supermarket alternatives?',
-    productFeatures: 'What trust factors matter? Origin, freshness, farming method, certifications, clean ingredients.',
-    differentiation: 'What purchase hesitation should be addressed? Sweetness, freshness, shipping damage, storage, shelf life.',
+    targetCustomer: '타겟 구매자는 누구인가요?',
+    customerPainPoint: '언제, 어떤 상황에서 먹거나 사용하나요?',
+    buyingMotivation: '강조해야 할 맛, 신선도, 원산지, 원재료 품질은 무엇인가요?',
+    productBenefits: '일반 마트 제품과 다른 점은 무엇인가요?',
+    productFeatures: '신뢰 요소는 무엇인가요? 원산지, 신선도, 재배 방식, 인증, 클린 원료 등',
+    differentiation: '구매 전 망설임은 무엇인가요? 당도, 신선도, 배송 파손, 보관, 유통기한 등',
   },
   'Beauty & Personal Care': {
-    targetCustomer: 'Who is the target user?',
-    customerPainPoint: 'What skin, grooming, or self-care problem does it solve?',
-    buyingMotivation: 'What result does the customer want?',
-    productBenefits: 'What ingredients, material, or technology should be highlighted?',
-    productFeatures: 'Is it for sensitive skin, daily use, premium care, or professional use?',
-    differentiation: 'What trust factor matters? Dermatologist-tested, clean ingredients, cruelty-free, clinical tone.',
+    targetCustomer: '타겟 사용자는 누구인가요?',
+    customerPainPoint: '어떤 피부, 그루밍, 셀프케어 문제를 해결하나요?',
+    buyingMotivation: '고객이 원하는 결과는 무엇인가요?',
+    productBenefits: '강조해야 할 성분, 소재, 기술은 무엇인가요?',
+    productFeatures: '민감성 피부, 데일리용, 프리미엄 케어, 전문가용 중 어디에 가깝나요?',
+    differentiation: '신뢰 요소는 무엇인가요? 피부과 테스트, 클린 성분, 크루얼티 프리, 임상적 톤 등',
   },
   'Health & Supplement': {
-    targetCustomer: 'Who is the target customer?',
-    customerPainPoint: 'What health goal do they have?',
-    buyingMotivation: 'What daily problem or discomfort do they want to solve?',
-    productBenefits: 'What ingredients or formulation should be highlighted?',
-    productFeatures: 'What trust elements matter? GMP, third-party tested, sugar-free, vegan, non-GMO.',
-    differentiation: 'What warning or compliance-sensitive wording should be avoided?',
+    targetCustomer: '타겟 고객은 누구인가요?',
+    customerPainPoint: '고객의 건강 목표는 무엇인가요?',
+    buyingMotivation: '해결하고 싶은 일상 문제나 불편함은 무엇인가요?',
+    productBenefits: '강조해야 할 원료나 배합은 무엇인가요?',
+    productFeatures: '신뢰 요소는 무엇인가요? GMP, 제3자 테스트, 무설탕, 비건, Non-GMO 등',
+    differentiation: '피해야 할 표현이나 규제상 민감한 문구가 있나요?',
   },
   'Home & Kitchen': {
-    targetCustomer: 'Who will use this product?',
-    customerPainPoint: 'What household problem does it solve?',
-    buyingMotivation: 'What usage scene should be shown?',
-    productBenefits: 'What material, durability, size, or convenience feature matters?',
-    productFeatures: 'What makes it better than ordinary alternatives?',
-    differentiation: 'What objection or comparison point should be addressed?',
+    targetCustomer: '누가 이 제품을 사용하나요?',
+    customerPainPoint: '어떤 생활/가정 문제를 해결하나요?',
+    buyingMotivation: '보여줘야 할 사용 장면은 무엇인가요?',
+    productBenefits: '중요한 소재, 내구성, 크기, 편의 기능은 무엇인가요?',
+    productFeatures: '일반 대체품보다 나은 점은 무엇인가요?',
+    differentiation: '해소해야 할 반론이나 비교 포인트는 무엇인가요?',
   },
   'Electronics & Tech': {
-    targetCustomer: 'Who is the product for?',
-    customerPainPoint: 'What functional problem does it solve?',
-    buyingMotivation: 'What technical specs matter?',
-    productBenefits: 'What use case should be visualized?',
-    productFeatures: 'What comparison point matters?',
-    differentiation: 'What trust factor matters? Warranty, compatibility, performance, safety.',
+    targetCustomer: '이 제품은 누구를 위한 제품인가요?',
+    customerPainPoint: '어떤 기능적 문제를 해결하나요?',
+    buyingMotivation: '중요한 기술 스펙은 무엇인가요?',
+    productBenefits: '시각화해야 할 사용 사례는 무엇인가요?',
+    productFeatures: '중요한 비교 포인트는 무엇인가요?',
+    differentiation: '신뢰 요소는 무엇인가요? 보증, 호환성, 성능, 안전성 등',
   },
   'Pet Supplies': {
-    targetCustomer: 'What type of pet is this for?',
-    customerPainPoint: 'What problem does it solve for the pet or owner?',
-    buyingMotivation: 'What safety, comfort, or ingredient factor matters?',
-    productBenefits: 'What lifestyle scene should be shown?',
-    productFeatures: 'What trust factor matters? Vet recommended, safe material, washable, non-toxic.',
-    differentiation: 'What purchase hesitation should be addressed?',
+    targetCustomer: '어떤 반려동물을 위한 제품인가요?',
+    customerPainPoint: '반려동물이나 보호자의 어떤 문제를 해결하나요?',
+    buyingMotivation: '중요한 안전성, 편안함, 성분 요소는 무엇인가요?',
+    productBenefits: '보여줘야 할 라이프스타일 장면은 무엇인가요?',
+    productFeatures: '신뢰 요소는 무엇인가요? 수의사 추천, 안전 소재, 세탁 가능, 무독성 등',
+    differentiation: '구매 전 망설임은 무엇인가요?',
   },
   Other: {
-    targetCustomer: 'Target Customer',
-    customerPainPoint: 'Customer Pain Point',
-    buyingMotivation: 'Buying Motivation',
-    productBenefits: 'Product Benefits',
-    productFeatures: 'Product Features',
-    differentiation: 'Differentiation',
+    targetCustomer: '타겟 고객',
+    customerPainPoint: '고객의 문제점',
+    buyingMotivation: '구매 이유',
+    productBenefits: '제품 베네핏',
+    productFeatures: '제품 특징',
+    differentiation: '차별점',
   },
 }
 
@@ -257,10 +313,10 @@ function dataUrlBytes(dataUrl) {
 function compressImageFile(file, maxWidth = 1200, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('Failed to read image file.'))
+    reader.onerror = () => reject(new Error('이미지 파일을 읽지 못했습니다.'))
     reader.onload = () => {
       const img = new Image()
-      img.onerror = () => reject(new Error('Failed to load image file.'))
+      img.onerror = () => reject(new Error('이미지 파일을 불러오지 못했습니다.'))
       img.onload = () => {
         const ratio = Math.min(1, maxWidth / img.width)
         const width = Math.max(1, Math.round(img.width * ratio))
@@ -794,7 +850,7 @@ function CanvaPanel({ sec, idx, onUpdate, onDelete, activeField, activeOverlay, 
 }
 
 /* ── 선택 버튼 그룹 ─────────────────────────────────── */
-function OptionBtns({ options, value, onChange, multi = false, maxSelect = null }) {
+function OptionBtns({ options, value, onChange, multi = false, maxSelect = null, labels = {} }) {
   const isSel = opt => multi ? value.includes(opt) : value === opt
   const toggle = opt => {
     if (multi) {
@@ -812,7 +868,7 @@ function OptionBtns({ options, value, onChange, multi = false, maxSelect = null 
         return (
           <button key={opt} onClick={() => !maxed && toggle(opt)}
             style={{ padding: '7px 13px', borderRadius: 9, border: sel ? '2px solid #1D6B45' : `1.5px solid ${C.bd}`, background: sel ? '#E9F7F0' : C.sur, color: sel ? '#1D6B45' : C.tx, fontSize: 12.5, fontWeight: sel ? 700 : 400, cursor: maxed ? 'not-allowed' : 'pointer', opacity: maxed ? 0.45 : 1, transition: 'all .12s' }}>
-            {opt}
+            {labels[opt] || opt}
           </button>
         )
       })}
@@ -1128,12 +1184,12 @@ function DetailView({ result, savedSects, onSectsChange, productInput, quiz }) {
           <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 12px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:16 }}>
               <div>
-                <div style={{ fontSize:12, fontWeight:800, color:C.tx }}>Amazon A+ Delivery Preview</div>
-                <div style={{ fontSize:11, color:C.fa, marginTop:3 }}>Generated in English from your product and brand information.</div>
+                <div style={{ fontSize:12, fontWeight:800, color:C.tx }}>Amazon A+ 납품 시안</div>
+                <div style={{ fontSize:11, color:C.fa, marginTop:3 }}>입력은 한국어로 받아도 결과물은 영어 카피로 생성됩니다.</div>
               </div>
               <button onClick={dlAllPNG} disabled={dlAll}
                 style={{ padding:'9px 14px', borderRadius:8, border:'none', background:dlAll?'#ECEAE5':C.tx, color:dlAll?C.fa:'#fff', fontSize:12, fontWeight:800, cursor:dlAll?'not-allowed':'pointer' }}>
-                {dlAll ? 'Downloading...' : 'Download PNG Set'}
+                {dlAll ? '다운로드 중...' : 'PNG 전체 다운로드'}
               </button>
             </div>
             {/* 캔버스 */}
@@ -1400,12 +1456,12 @@ export default function App() {
       try {
         const compressed = await compressImageFile(f, 1200, 0.75)
         if (dataUrlBytes(compressed) > MAX_PRODUCT_IMAGE_BYTES) {
-          setError('Uploaded images are too large. Please upload smaller images or allow automatic compression.')
+          setError('업로드한 이미지가 너무 큽니다. 더 작은 이미지를 업로드하거나 자동 압축을 사용해주세요.')
           continue
         }
         setProductImgs(prev => prev.length < 5 ? [...prev, compressed] : prev)
       } catch (err) {
-        setError(err.message || 'Failed to compress uploaded image.')
+        setError(err.message || '업로드한 이미지를 압축하지 못했습니다.')
       }
     }
     e.target.value = ''
@@ -1521,7 +1577,7 @@ export default function App() {
       const apiProductImgs = productImgs.slice(0, generateMode === 'Multi Concept' ? 1 : 2)
       const imagePayloadBytes = apiProductImgs.reduce((sum, img) => sum + dataUrlBytes(img), 0)
       if (imagePayloadBytes > 2.4 * 1024 * 1024) {
-        const err = new Error('Uploaded images are too large. Please upload smaller images or allow automatic compression.')
+        const err = new Error('업로드한 이미지가 너무 큽니다. 더 작은 이미지를 업로드하거나 자동 압축을 사용해주세요.')
         err.code = 'PAYLOAD_TOO_LARGE'
         err.payloadBytes = imagePayloadBytes
         throw err
@@ -1705,45 +1761,45 @@ This concept must differ from the other options in section flow and at least one
           {/* 타이틀 (클릭 시 전체 리셋) */}
           <div onClick={resetAll} onMouseEnter={() => setTitleHover(true)} onMouseLeave={() => setTitleHover(false)}
             style={{ textAlign: 'center', marginBottom: 32, cursor: 'pointer', opacity: titleHover ? 0.6 : 1, transition: 'opacity .15s' }}>
-            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>Amazon A+ Content Preview Generator</h1>
-            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>Enter product and brand information. ContentOS creates an English Amazon A+ delivery preview automatically.</p>
+            <h1 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-0.05em', lineHeight: 1.2, margin: '0 0 8px' }}>Amazon A+ 콘텐츠 시안 생성기</h1>
+            <p style={{ fontSize: 13, color: C.mu, lineHeight: 1.75, margin: 0 }}>제품과 브랜드 정보를 한국어로 입력하면, ContentOS가 영문 Amazon A+ 납품 시안을 자동 생성합니다.</p>
           </div>
 
           {/* ── STEP 1: Product basics ── */}
-          <StepCard stepNum={1} label="Product Basics" done={step1Done}>
-            <SubQ label="Product Name">
+          <StepCard stepNum={1} label="제품 기본 정보" done={step1Done}>
+            <SubQ label="제품명">
               <input value={productName} onChange={e => setProductName(e.target.value)}
-                placeholder="예) 제주 애플망고 / Ceramic pour-over set / Hydrating face serum"
+                placeholder="예) 제주 애플망고 / 민감성 피부용 남성 면도기 / 수분 앰플"
                 style={{ width: '100%', padding: '12px 14px', border: fieldBorder('productName'), borderRadius: 10, outline: 'none', fontSize: 14, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
 
-            <SubQ label="Product Category">
+            <SubQ label="카테고리">
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:7, marginBottom:8 }}>
                 {PRODUCT_CATEGORIES.map(cat => {
                   const on = productCategory === cat
                   return (
                     <button key={cat} onClick={() => setProductCategory(cat)}
                       style={{ padding:'9px 10px', borderRadius:9, border:`1.5px solid ${isMissing('productCategory') ? '#EF4444' : (on ? '#1D6B45' : C.bd)}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.tx, fontSize:11.5, fontWeight:on?800:650, cursor:'pointer', textAlign:'left' }}>
-                      {cat}
+                      {CATEGORY_LABELS[cat] || cat}
                     </button>
                   )
                 })}
               </div>
               <input value={productCategoryDetail} onChange={e => setProductCategoryDetail(e.target.value)}
-                placeholder="Additional Category Detail: Jeju-grown premium apple mango / Men's shaving razor for sensitive skin"
+                placeholder="추가 카테고리 설명: 제주산 프리미엄 애플망고 / 민감성 피부용 남성 면도기"
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
 
-            <SubQ label="Product Description">
+            <SubQ label="제품 설명">
               <textarea ref={taRef} value={sharedInput} onChange={e => setSharedInput(e.target.value)}
                 placeholder="제품 특징, 소재, 가격대, 고객, 차별점, 사용 상황을 자유롭게 적어주세요."
                 style={{ width: '100%', minHeight: 120, padding: '12px 14px', border: fieldBorder('sharedInput'), borderRadius: 10, outline: 'none', resize: 'none', fontSize: 14, lineHeight: 1.85, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
               />
             </SubQ>
 
-            <SubQ label="Product Photos (optional, up to 5)">
+            <SubQ label="제품 사진 (선택, 최대 5장)">
               <input ref={imgUploadRef} type="file" accept="image/*" multiple onChange={handleProductImgs} style={{ display: 'none' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <button onClick={() => imgUploadRef.current?.click()} disabled={productImgs.length >= 5}
@@ -1760,7 +1816,7 @@ This concept must differ from the other options in section flow and at least one
               </div>
             </SubQ>
 
-            <SubQ label="AI Image Generation">
+            <SubQ label="AI 이미지 생성">
               <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer', userSelect:'none' }}>
                 <input
                   type="checkbox"
@@ -1768,10 +1824,10 @@ This concept must differ from the other options in section flow and at least one
                   onChange={e => setAutoGenerateImages(e.target.checked)}
                   style={{ width:16, height:16, accentColor:'#1D6B45' }}
                 />
-                Generate supporting images automatically
+                보조 이미지를 자동 생성합니다
               </label>
               <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
-                Uploaded product photos remain the source of product truth. Internal generation details are never shown.
+                업로드한 제품 사진을 기준으로 사용하며, 내부 생성 과정과 프롬프트는 노출하지 않습니다.
               </p>
             </SubQ>
           </StepCard>
@@ -1840,8 +1896,8 @@ This concept must differ from the other options in section flow and at least one
                 <div style={{ marginTop:8, display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:6 }}>
                   {CONCEPT_DIRECTIONS.map(c => (
                     <div key={c.label} style={{ padding:'8px 10px', border:`1px solid ${C.bd}`, borderRadius:8, background:C.alt }}>
-                      <div style={{ fontSize:11, fontWeight:800, color:C.tx }}>{c.label}</div>
-                      <div style={{ fontSize:10.5, color:C.mu, marginTop:2 }}>{c.name}</div>
+                      <div style={{ fontSize:11, fontWeight:800, color:C.tx }}>{CONCEPT_LABELS_KO[c.label] || c.label}</div>
+                      <div style={{ fontSize:10.5, color:C.mu, marginTop:2 }}>{CONCEPT_LABELS_KO[c.name] || c.name}</div>
                     </div>
                   ))}
                 </div>
@@ -1851,10 +1907,10 @@ This concept must differ from the other options in section flow and at least one
           )}
 
           {/* ── STEP 4: Conversion context ── */}
-          <StepCard stepNum={2} label="Brand & Customer" done={step3Done}>
+          <StepCard stepNum={2} label="브랜드 / 고객 정보" done={step3Done}>
             {triedGenerate && !step4Done && (
               <div style={{ padding:'10px 12px', background:'#fff7ed', border:'1px solid #fed7aa', borderRadius:9, color:'#c2410c', fontSize:12, fontWeight:700, marginBottom:12 }}>
-                Please complete all required fields before generating your preview.
+                시안을 생성하기 전에 필수 입력값을 모두 입력해주세요.
               </div>
             )}
             <SubQ label={categoryQuestions.targetCustomer}>
@@ -1862,12 +1918,12 @@ This concept must differ from the other options in section flow and at least one
                 {TARGET_CUSTOMER_OPTIONS.map(opt => (
                   <button key={opt} onClick={() => setTargetCustomer(opt === 'Other' ? '' : opt)}
                     style={{ padding:'5px 9px', borderRadius:999, border:`1px solid ${targetCustomer === opt ? '#1D6B45' : C.bd}`, background:targetCustomer === opt?'#F0FDF4':C.sur, color:targetCustomer === opt?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
-                    {opt}
+                    {TARGET_CUSTOMER_LABELS[opt] || opt}
                   </button>
                 ))}
               </div>
               <input value={targetCustomer} onChange={e => setTargetCustomer(e.target.value)}
-                placeholder="예) busy parents, Amazon shoppers comparing premium options"
+                placeholder="예) 40대 남성, 프리미엄 옵션을 비교하는 아마존 구매자, 민감성 피부 고객"
                 style={{ width: '100%', padding: '10px 13px', border: fieldBorder('targetCustomer'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
@@ -1901,43 +1957,43 @@ This concept must differ from the other options in section flow and at least one
                 style={{ width: '100%', minHeight: 72, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.8, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
               />
             </SubQ>
-            <SubQ label="Brand Tone">
+            <SubQ label="브랜드 분위기">
               <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:8 }}>
                 {BRAND_TONE_OPTIONS.map(opt => (
                   <button key={opt} onClick={() => setBrandToneInput(opt === 'Other' ? '' : opt)}
                     style={{ padding:'5px 9px', borderRadius:999, border:`1px solid ${brandToneInput === opt ? '#1D6B45' : C.bd}`, background:brandToneInput === opt?'#F0FDF4':C.sur, color:brandToneInput === opt?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
-                    {opt}
+                    {BRAND_TONE_LABELS[opt] || opt}
                   </button>
                 ))}
               </div>
               <input value={brandToneInput} onChange={e => setBrandToneInput(e.target.value)}
-                placeholder="예) premium clinical, warm DTC, technical, minimalist"
+                placeholder="예) 프리미엄하지만 차갑지 않게, 자연스럽고 신뢰감 있게"
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Visual Direction">
-              <OptionBtns options={OUTPUT_STYLES} value={outputStyle} onChange={setOutputStyle} />
+            <SubQ label="시각적 방향">
+              <OptionBtns options={OUTPUT_STYLES} value={outputStyle} onChange={setOutputStyle} labels={OUTPUT_STYLE_LABELS} />
             </SubQ>
-            <SubQ label="Additional Tone Detail">
+            <SubQ label="브랜드 분위기 추가 설명">
               <input value={brandToneDetail} onChange={e => setBrandToneDetail(e.target.value)}
-                placeholder="Premium but not too cold. Natural and trustworthy."
+                placeholder="예) 고급스럽지만 너무 차갑지 않게. 자연스럽고 신뢰감 있는 톤."
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Reference URL or Competitor Link">
+            <SubQ label="참고 사이트 또는 경쟁사 링크">
               <input value={referenceUrl} onChange={e => setReferenceUrl(e.target.value)}
-                placeholder="Amazon listing, Shopify store, competitor page, or mood reference"
+                placeholder="Amazon 상품 페이지, Shopify 스토어, 경쟁사 페이지, 무드 참고 링크"
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
           </StepCard>
 
-          <StepCard stepNum={3} label="Generate" done={step4Done}>
-            <SubQ label="Generation Mode">
+          <StepCard stepNum={3} label="생성 설정" done={step4Done}>
+            <SubQ label="생성 모드">
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:8 }}>
                 {[
-                  { key:'Fast Draft', title:'Fast Draft', desc:'1 complete Amazon A+ preview', sub:'Text/layout first, 1-2 representative images to control cost' },
-                  { key:'Multi Concept', title:'Multi Concept', desc:'3 complete Amazon A+ preview directions', sub:'Higher cost, better for Fiverr/client presentation' },
+                  { key:'Fast Draft', title:'빠른 초안', desc:'Amazon A+ 시안 1개 생성', sub:'비용 절약형. 대표 이미지 1~2장 중심으로 빠르게 생성' },
+                  { key:'Multi Concept', title:'3안 제안', desc:'Amazon A+ 시안 방향 3개 생성', sub:'Fiverr / 고객 제안용. 비용은 더 높지만 비교 제안에 적합' },
                 ].map(mode => {
                   const on = generateMode === mode.key
                   return (
@@ -1961,13 +2017,13 @@ This concept must differ from the other options in section flow and at least one
                 </div>
               )}
             </SubQ>
-            <SubQ label="Image Cost Control">
+            <SubQ label="이미지 비용 관리">
               <label style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:12.5, color:C.tx, cursor:'pointer' }}>
                 <input type="checkbox" checked={generateAllSectionImages} onChange={e => setGenerateAllSectionImages(e.target.checked)} style={{ width:16, height:16, accentColor:'#1D6B45' }} />
-                Generate images for every Amazon A+ module
+                모든 Amazon A+ 모듈 이미지를 생성합니다
               </label>
               <p style={{ margin:'6px 0 0', fontSize:11, color:C.fa, lineHeight:1.6 }}>
-                Off by default. ContentOS generates only representative images and uses upload slots/placeholders for the rest.
+                기본값은 꺼짐입니다. 비용 절약을 위해 대표 이미지만 생성하고 나머지는 업로드 슬롯 또는 플레이스홀더로 처리합니다.
               </p>
             </SubQ>
           </StepCard>
@@ -2000,7 +2056,7 @@ This concept must differ from the other options in section flow and at least one
           {/* ── Generate section ── */}
           <div style={{ background: '#EFF6FF', borderRadius: 16, border: `1.5px solid ${allDone ? '#BFDBFE' : '#FECACA'}`, overflow: 'hidden', marginBottom: 12, boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
             <div style={{ padding: '10px 16px', background: '#DBEAFE', borderBottom: '1px solid #BFDBFE' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Generate Amazon A+ Preview</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#1E40AF' }}>Amazon A+ 시안 생성</span>
             </div>
             <div style={{ display: 'none', gridTemplateColumns: `repeat(${TASKS.length},1fr)`, gap: 8, padding: '10px 14px', borderBottom: `1px solid ${C.bd}` }}>
               {TASKS.map(t => {
@@ -2037,13 +2093,13 @@ This concept must differ from the other options in section flow and at least one
             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {allDone
-                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ Ready — AI will generate an English Amazon A+ preview</p>
+                  ? <p style={{ fontSize: 11, color: '#1D6B45', fontWeight: 700, margin: 0 }}>✓ 준비 완료 — 영문 Amazon A+ 시안을 생성합니다</p>
                   : <p style={{ fontSize: 11, color: '#EF4444', margin: 0 }}>미완료: {incompletedSteps.join(', ')}</p>
                 }
               </div>
               <button onClick={run} disabled={loading}
                 style={{ padding: '10px 24px', borderRadius: 9, border: 'none', background: loading ? '#ECEAE5' : C.tx, color: loading ? C.fa : '#fff', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background .12s' }}>
-                {loading ? <><Spin /> Generating...</> : 'Generate Amazon A+ Preview'}
+                {loading ? <><Spin /> 생성 중...</> : 'Amazon A+ 시안 생성'}
               </button>
             </div>
           </div>
@@ -2052,7 +2108,7 @@ This concept must differ from the other options in section flow and at least one
           {error && <div style={{ padding: '12px 15px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9, fontSize: 13, color: '#b91c1c', marginBottom: 14 }}>{error}</div>}
           {triedGenerate && missingFields.length > 0 && (
             <div style={{ padding: '12px 15px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 9, fontSize: 13, color: '#c2410c', marginBottom: 14 }}>
-              Please complete all required fields before generating your section.
+              시안을 생성하기 전에 필수 입력값을 모두 입력해주세요.
             </div>
           )}
 
@@ -2060,7 +2116,7 @@ This concept must differ from the other options in section flow and at least one
           {loading && (
             <div style={{ background: C.sur, borderRadius: 14, border: `1.5px solid ${C.bd}`, padding: '28px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 22, color: C.mu, fontSize: 13 }}>
-                <Spin />{imageGenStatus || 'Generating commerce section…'}
+                <Spin />{imageGenStatus || 'Amazon A+ 시안을 생성하는 중입니다...'}
               </div>
               {[95, 75, 85, 60, 90, 50].map((w, i) => <div key={i} style={{ height: 10, background: C.alt, borderRadius: 5, width: `${w}%`, marginBottom: 9, animation: `pl 1.5s ease ${i * .12}s infinite` }} />)}
             </div>
