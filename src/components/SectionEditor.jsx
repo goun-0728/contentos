@@ -140,7 +140,7 @@ export default function SectionEditor({
   const wrapRef = useRef(null)
   const snapRef = useRef(null)
   const canvasW = sec.canvas?.width || BASE_CARD_W
-  const canvasH = sec.canvas?.height || null
+  const canvasH = sec.canvas?.height || 600
   const canvasScale = canvasW / BASE_CARD_W
 
   useEffect(() => {
@@ -165,14 +165,13 @@ export default function SectionEditor({
   useEffect(() => {
     const inner = ref.current; if (!inner || !wrapRef.current) return
     const update = () => {
-      if (wrapRef.current && ref.current)
-        wrapRef.current.style.height = ref.current.offsetHeight * scale + 'px'
+      if (wrapRef.current) wrapRef.current.style.height = `${canvasH * scale}px`
     }
     update()
     const obs = new ResizeObserver(update)
     obs.observe(inner)
     return () => obs.disconnect()
-  }, [scale])
+  }, [scale, canvasH])
 
   const baseT = DS[sec.designStyle] || Object.values(DS)[0]
   const t     = { ...baseT, ...(sec.customColors || {}) }
@@ -222,12 +221,13 @@ export default function SectionEditor({
 
       {/* 카드 미리보기 */}
       <div ref={wrapRef} style={{ position:'relative', overflow:'hidden' }}>
-        <div style={{ width:canvasW, transformOrigin:'top left', transform:`scale(${scale})` }}>
+        <div style={{ width:canvasW, height:canvasH, transformOrigin:'top left', transform:`scale(${scale})` }}>
           <div
             ref={ref}
             data-sect-card
             data-canvas-width={canvasW}
-            style={{ fontFamily:"'Nanum Gothic','Apple SD Gothic Neo',sans-serif", width:canvasW, minHeight:canvasH || undefined, position:'relative', overflow:'hidden' }}
+            data-canvas-height={canvasH}
+            style={{ fontFamily:"'Nanum Gothic','Apple SD Gothic Neo',sans-serif", width:canvasW, height:canvasH, position:'relative', overflow:'hidden' }}
           >
             <div style={{ width:BASE_CARD_W, transformOrigin:'top left', transform:`scale(${canvasScale})` }}>
               <Tpl
@@ -253,7 +253,7 @@ export default function SectionEditor({
                 onRemove={rmOverlay}
               />
             ))}
-            <div style={{ padding:'6px 20px', textAlign:'right', fontSize:9, color:t.fg, opacity:0.1, background:t.bg }}>
+            <div style={{ position:'absolute', right:20, bottom:8, fontSize:9, color:t.fg, opacity:0.1, zIndex:12 }}>
               ContentOS
             </div>
           </div>

@@ -100,26 +100,124 @@ const SIZE_PRESET_KEYS = Object.keys(SIZE_PRESETS)
 const CONCEPT_DIRECTIONS = [
   {
     label: 'Option A',
-    name: 'Premium Luxury',
+    name: 'Human Lifestyle',
     layout: 'editorial hero layout with elevated spacing and a premium visual hierarchy',
     copy: 'aspirational but specific premium DTC copy with restrained language',
-    image: 'high-end studio product photography, rich lighting, premium surface textures',
+    image: 'natural human lifestyle advertising photography: a person using the product, realistic hands or partial face only when useful, real-world lighting, no distorted fingers, no fake skin, no overprocessed AI look',
   },
   {
     label: 'Option B',
-    name: 'Clean Minimal',
+    name: 'Product Only',
     layout: 'clean modular layout with generous whitespace and simple block structure',
     copy: 'clear, concise, minimalist copy focused on product clarity and trust',
-    image: 'bright commercial photography, clean background, natural realistic light',
+    image: 'product-only commercial studio photography: no people, product and package detail, material texture, premium surface, controlled studio lighting, no CGI or plastic look',
   },
   {
     label: 'Option C',
-    name: 'Conversion Focused',
+    name: 'Contextual Scene',
     layout: 'benefit-led conversion layout with prominent proof points and CTA emphasis',
     copy: 'direct conversion copy focused on pain point, benefit, proof, and action',
-    image: 'e-commerce advertising photography that makes the product use case obvious',
+    image: 'contextual scene photography: product placed naturally in its usage environment, space or softly blurred person may appear in background, product remains the visual anchor',
   },
 ]
+
+const PRODUCT_CATEGORIES = [
+  'Beauty & Personal Care',
+  'Health & Supplement',
+  'Food & Grocery',
+  'Home & Kitchen',
+  'Pet Supplies',
+  'Baby & Kids',
+  'Fashion & Apparel',
+  'Electronics & Tech',
+  'Sports & Outdoor',
+  'Tools & Hardware',
+  'Digital Product',
+  'Other',
+]
+
+const TARGET_CUSTOMER_OPTIONS = [
+  'Busy parents',
+  'Men in their 40s',
+  'Women in their 30s',
+  'Athletes',
+  'Pet owners',
+  'Office workers',
+  'Gift buyers',
+  'Other',
+]
+
+const BRAND_TONE_OPTIONS = [
+  'Premium',
+  'Clinical',
+  'Minimal',
+  'Warm',
+  'Natural',
+  'Bold',
+  'Luxury',
+  'Technical',
+  'Friendly',
+  'Other',
+]
+
+const CATEGORY_QUESTIONS = {
+  'Food & Grocery': {
+    targetCustomer: 'Who is the target buyer?',
+    customerPainPoint: 'When do they usually consume this product?',
+    buyingMotivation: 'What taste, freshness, origin, or ingredient quality should be highlighted?',
+    productBenefits: 'What makes this product different from supermarket alternatives?',
+    productFeatures: 'What trust factors matter? Origin, freshness, farming method, certifications, clean ingredients.',
+    differentiation: 'What purchase hesitation should be addressed? Sweetness, freshness, shipping damage, storage, shelf life.',
+  },
+  'Beauty & Personal Care': {
+    targetCustomer: 'Who is the target user?',
+    customerPainPoint: 'What skin, grooming, or self-care problem does it solve?',
+    buyingMotivation: 'What result does the customer want?',
+    productBenefits: 'What ingredients, material, or technology should be highlighted?',
+    productFeatures: 'Is it for sensitive skin, daily use, premium care, or professional use?',
+    differentiation: 'What trust factor matters? Dermatologist-tested, clean ingredients, cruelty-free, clinical tone.',
+  },
+  'Health & Supplement': {
+    targetCustomer: 'Who is the target customer?',
+    customerPainPoint: 'What health goal do they have?',
+    buyingMotivation: 'What daily problem or discomfort do they want to solve?',
+    productBenefits: 'What ingredients or formulation should be highlighted?',
+    productFeatures: 'What trust elements matter? GMP, third-party tested, sugar-free, vegan, non-GMO.',
+    differentiation: 'What warning or compliance-sensitive wording should be avoided?',
+  },
+  'Home & Kitchen': {
+    targetCustomer: 'Who will use this product?',
+    customerPainPoint: 'What household problem does it solve?',
+    buyingMotivation: 'What usage scene should be shown?',
+    productBenefits: 'What material, durability, size, or convenience feature matters?',
+    productFeatures: 'What makes it better than ordinary alternatives?',
+    differentiation: 'What objection or comparison point should be addressed?',
+  },
+  'Electronics & Tech': {
+    targetCustomer: 'Who is the product for?',
+    customerPainPoint: 'What functional problem does it solve?',
+    buyingMotivation: 'What technical specs matter?',
+    productBenefits: 'What use case should be visualized?',
+    productFeatures: 'What comparison point matters?',
+    differentiation: 'What trust factor matters? Warranty, compatibility, performance, safety.',
+  },
+  'Pet Supplies': {
+    targetCustomer: 'What type of pet is this for?',
+    customerPainPoint: 'What problem does it solve for the pet or owner?',
+    buyingMotivation: 'What safety, comfort, or ingredient factor matters?',
+    productBenefits: 'What lifestyle scene should be shown?',
+    productFeatures: 'What trust factor matters? Vet recommended, safe material, washable, non-toxic.',
+    differentiation: 'What purchase hesitation should be addressed?',
+  },
+  Other: {
+    targetCustomer: 'Target Customer',
+    customerPainPoint: 'Customer Pain Point',
+    buyingMotivation: 'Buying Motivation',
+    productBenefits: 'Product Benefits',
+    productFeatures: 'Product Features',
+    differentiation: 'Differentiation',
+  },
+}
 
 const EMPTY_QUIZ = {
   category: '', priceRange: '',
@@ -690,7 +788,7 @@ function SubQ({ label, children }) {
 }
 
 async function generateSectionImages(sections, onProgress, context = {}) {
-  const targets = sections.filter(s => s.imagePrompt && !s.secImg)
+  const targets = sections.filter(s => s.imagePrompt && (context.uploadedProductPhoto || !s.secImg))
   const next = sections.map(s => ({ ...s }))
 
   for (let i = 0; i < targets.length; i++) {
@@ -705,11 +803,14 @@ async function generateSectionImages(sections, onProgress, context = {}) {
         prompt: strengthenImagePrompt(target.imagePrompt, {
           ...context,
           sectionType: target.sectionType || context.sectionType,
+          imageStrategy: target.imageStrategy,
         }),
         size: '1024x1536',
         quality: 'medium',
       })
-      next[idx] = { ...next[idx], secImg: image, imageStatus: 'generated' }
+      next[idx] = context.uploadedProductPhoto
+        ? { ...next[idx], secImg2: image, imageStatus: 'support-generated' }
+        : { ...next[idx], secImg: image, imageStatus: 'generated' }
     } catch (e) {
       next[idx] = { ...next[idx], imageStatus: 'failed', imageError: e.message }
       console.error(e)
@@ -720,7 +821,7 @@ async function generateSectionImages(sections, onProgress, context = {}) {
   return next
 }
 
-function strengthenImagePrompt(prompt, { productName, productCategory, sectionType, uploadedProductPhoto }) {
+function strengthenImagePrompt(prompt, { productName, productCategory, sectionType, uploadedProductPhoto, imageStrategy }) {
   const category = productCategory?.trim() || 'infer the exact product category from the product name'
   const name = productName?.trim() || 'the specified product'
   const lower = `${name} ${category}`.toLowerCase()
@@ -733,8 +834,9 @@ function strengthenImagePrompt(prompt, { productName, productCategory, sectionTy
     `PRODUCT IDENTITY LOCK: The product is "${name}".`,
     `PRODUCT CATEGORY: ${category}.`,
     `SECTION CONTEXT: ${sectionType}.`,
+    imageStrategy ? `IMAGE STRATEGY: ${imageStrategy}.` : '',
     uploadedProductPhoto
-      ? 'Use the uploaded product photo as the main product truth. Generated imagery must only support the real product photo and must not redesign the product.'
+      ? 'Use the uploaded product photo as the main product truth. Do not redesign the product. Generate only supporting imagery such as background, lifestyle context, close-up environment, detail surface, or scene direction that can be combined with the uploaded product photo.'
       : 'If exact product appearance is uncertain, create a realistic placeholder composition and leave room to replace with the real product photo.',
     'Before rendering, verify the scene clearly shows the correct product category and not an unrelated object.',
     prompt,
@@ -1064,6 +1166,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [productName, setProductName] = useState('')
   const [productCategory, setProductCategory] = useState('')
+  const [productCategoryDetail, setProductCategoryDetail] = useState('')
   const [platform, setPlatform] = useState('Amazon A+')
   const [sectionMode, setSectionMode] = useState('Static Section')
   const [sectionType, setSectionType] = useState('Hero Banner')
@@ -1076,6 +1179,7 @@ export default function App() {
   const [productBenefits, setProductBenefits] = useState('')
   const [productFeatures, setProductFeatures] = useState('')
   const [brandToneInput, setBrandToneInput] = useState('')
+  const [brandToneDetail, setBrandToneDetail] = useState('')
   const [referenceUrl, setReferenceUrl] = useState('')
   const [triedGenerate, setTriedGenerate] = useState(false)
 
@@ -1127,6 +1231,7 @@ export default function App() {
 
   const requiredFields = {
     productName,
+    productCategory,
     sharedInput,
     platform,
     sectionType,
@@ -1140,7 +1245,9 @@ export default function App() {
   const isMissing = key => triedGenerate && missingFields.includes(key)
   const fieldBorder = key => `1.5px solid ${isMissing(key) ? '#EF4444' : C.bd}`
 
-  const step1Done = !!(productName.trim() && sharedInput.trim())
+  const categoryQuestions = CATEGORY_QUESTIONS[productCategory] || CATEGORY_QUESTIONS.Other
+  const selectedCategoryText = [productCategory, productCategoryDetail.trim()].filter(Boolean).join(' - ')
+  const step1Done = !!(productName.trim() && productCategory.trim() && sharedInput.trim())
   const step2Done = !!(platform && sectionMode)
   const step3Done = !!(sectionType && templateVariant)
   const step4Done = !missingFields.some(k => ['targetCustomer','customerPainPoint','buyingMotivation','productBenefits'].includes(k))
@@ -1252,6 +1359,7 @@ export default function App() {
   const resetAll = () => {
     setProductName('')
     setProductCategory('')
+    setProductCategoryDetail('')
     setSharedInput('')
     setPlatform('Amazon A+')
     setSectionMode('Static Section')
@@ -1265,6 +1373,7 @@ export default function App() {
     setProductBenefits('')
     setProductFeatures('')
     setBrandToneInput('')
+    setBrandToneDetail('')
     setReferenceUrl('')
     setTriedGenerate(false)
     setQuiz({ ...EMPTY_QUIZ })
@@ -1297,16 +1406,24 @@ export default function App() {
     try {
       const userPrompt = [
         `Product Name: ${productName.trim()}`,
-        productCategory && `Product Category: ${productCategory.trim()}`,
+        selectedCategoryText && `Product Category: ${selectedCategoryText}`,
         `Product Description: ${sharedInput.trim()}`,
+        productImgs.length > 0 && `Product Photo Uploads: ${productImgs.length} uploaded image(s). Treat uploaded product photos as the source of truth for product shape, color, packaging, material, and visual identity.`,
         targetCustomer && `Target Customer: ${targetCustomer.trim()}`,
         customerPainPoint && `Customer Pain Point: ${customerPainPoint.trim()}`,
         buyingMotivation && `Buying Motivation: ${buyingMotivation.trim()}`,
         productBenefits && `Product Benefits: ${productBenefits.trim()}`,
         productFeatures && `Product Features: ${productFeatures.trim()}`,
-        brandToneInput && `Brand Tone: ${brandToneInput.trim()}`,
+        [brandToneInput, brandToneDetail.trim()].filter(Boolean).length > 0 && `Brand Tone: ${[brandToneInput, brandToneDetail.trim()].filter(Boolean).join(' - ')}`,
         quiz.differentiator && `Differentiation: ${quiz.differentiator.trim()}`,
         referenceUrl && `Reference URL or Competitor Link: ${referenceUrl.trim()}`,
+        `Category-Specific Questions:
+- ${categoryQuestions.targetCustomer}: ${targetCustomer.trim()}
+- ${categoryQuestions.customerPainPoint}: ${customerPainPoint.trim()}
+- ${categoryQuestions.buyingMotivation}: ${buyingMotivation.trim()}
+- ${categoryQuestions.productBenefits}: ${productBenefits.trim()}
+- ${categoryQuestions.productFeatures}: ${productFeatures.trim()}
+- ${categoryQuestions.differentiation}: ${quiz.differentiator.trim() || '(not provided)'}`,
         'If any input is Korean, translate it internally into natural English before writing copy or image prompts.',
         'Final section copy must be English. Image prompts must be English.',
       ].filter(Boolean).join('\n')
@@ -1318,13 +1435,13 @@ export default function App() {
         sectionType,
         templateVariant,
         productName,
-        productCategory,
+        productCategory: selectedCategoryText,
         targetCustomer,
         customerPainPoint,
         buyingMotivation,
         productBenefits,
         productFeatures,
-        brandTone: brandToneInput ? [brandToneInput] : [],
+        brandTone: [brandToneInput, brandToneDetail.trim()].filter(Boolean),
         differentiation: quiz.differentiator,
       }
       const sysBase = getSys(tid, tone, quizOpts)
@@ -1337,7 +1454,7 @@ export default function App() {
         const variant = availableTemplates[i % availableTemplates.length] || templateVariant
         const concept = CONCEPT_DIRECTIONS[i] || CONCEPT_DIRECTIONS[0]
         const optionPrompt = optionCount === 1
-          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 Design Concept, 1 Copy Direction, and 1 Image Direction for quick testing and minimum API cost.`
+          ? `${userPrompt}\n\nDesign Generation Mode: Fast Draft\nCreate 1 Design Concept, 1 Copy Direction, and 1 Image Direction for quick testing and minimum API cost.\nProduct Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}`
           : `${userPrompt}
 
 Design Generation Mode: Multi Concept
@@ -1346,10 +1463,11 @@ ${concept.label} - ${concept.name}
 - Copy Direction: ${concept.copy}
 - Image Direction: ${concept.image}
 - Template: ${variant}
+- Product Photo Policy: ${hasImgs ? 'Use uploaded product photos as the source of truth. Keep the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign the product; use generated imagery for backgrounds, lifestyle context, detail support, or placement direction.' : 'No product photo was uploaded. Create a temporary realistic product placeholder and make the section easy to replace with the real product photo.'}
 
 This concept must differ from the other options in at least one of: Layout, Copy, or Image Style.`
         const optionText = await generateContent({
-          systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }),
+          systemPrompt: getSys(tid, tone, { ...quizOpts, templateVariant: variant }) + (hasImgs ? '\n\nUploaded product photos are the source of truth. Analyze the uploaded images and preserve the real product shape, color, packaging, material, proportions, and visual identity. Do not redesign or invent a different product. Use AI-generated imagery for backgrounds, lifestyle scenes, close-up context, supporting detail shots, or product-photo placement direction.' : ''),
           userPrompt: optionPrompt,
           images: hasImgs ? productImgs : [],
           model: 'gpt-4o',
@@ -1370,13 +1488,17 @@ This concept must differ from the other options in at least one of: Layout, Copy
           ...s,
           title: generateMode === 'Multi Concept' ? `${CONCEPT_DIRECTIONS[i]?.label || 'Option'} - ${CONCEPT_DIRECTIONS[i]?.name || 'Concept'}` : s.title,
           canvas: { preset: sizePreset, ...preset },
+          imageStrategy: generateMode === 'Multi Concept'
+            ? `${CONCEPT_DIRECTIONS[i]?.label || 'Option'} - ${CONCEPT_DIRECTIONS[i]?.name || 'Concept'}: ${CONCEPT_DIRECTIONS[i]?.image || ''}`
+            : 'Fast Draft: one practical commercial product image direction, using uploaded product photos as source of truth when provided.',
           secImg: productImgs[0] || s.secImg,
+          uploadedProductPhotos: productImgs,
           productPhotoMode: productImgs[0] ? 'uploaded-main-product' : 'replace-with-real-product-photo',
         }))
         if (autoGenerateImages) {
           const generated = await generateSectionImages(parsed, setImageGenStatus, {
             productName,
-            productCategory,
+            productCategory: selectedCategoryText,
             sectionType,
             uploadedProductPhoto: productImgs.length > 0,
           })
@@ -1487,8 +1609,19 @@ This concept must differ from the other options in at least one of: Layout, Copy
             </SubQ>
 
             <SubQ label="Product Category">
-              <input value={productCategory} onChange={e => setProductCategory(e.target.value)}
-                placeholder="예) Razor / Men's grooming / Beauty serum / Kitchen appliance"
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:7, marginBottom:8 }}>
+                {PRODUCT_CATEGORIES.map(cat => {
+                  const on = productCategory === cat
+                  return (
+                    <button key={cat} onClick={() => setProductCategory(cat)}
+                      style={{ padding:'9px 10px', borderRadius:9, border:`1.5px solid ${isMissing('productCategory') ? '#EF4444' : (on ? '#1D6B45' : C.bd)}`, background:on?'#F0FDF4':C.sur, color:on?'#1D6B45':C.tx, fontSize:11.5, fontWeight:on?800:650, cursor:'pointer', textAlign:'left' }}>
+                      {cat}
+                    </button>
+                  )
+                })}
+              </div>
+              <input value={productCategoryDetail} onChange={e => setProductCategoryDetail(e.target.value)}
+                placeholder="Additional Category Detail: Jeju-grown premium apple mango / Men's shaving razor for sensitive skin"
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
@@ -1601,45 +1734,72 @@ This concept must differ from the other options in at least one of: Layout, Copy
 
           {/* ── STEP 4: Conversion context ── */}
           <StepCard stepNum={4} label="Conversion Context" done={step4Done}>
-            <SubQ label="Target Customer">
+            {triedGenerate && !step4Done && (
+              <div style={{ padding:'10px 12px', background:'#fff7ed', border:'1px solid #fed7aa', borderRadius:9, color:'#c2410c', fontSize:12, fontWeight:700, marginBottom:12 }}>
+                Please complete all required fields before generating your section.
+              </div>
+            )}
+            <SubQ label={categoryQuestions.targetCustomer}>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:8 }}>
+                {TARGET_CUSTOMER_OPTIONS.map(opt => (
+                  <button key={opt} onClick={() => setTargetCustomer(opt === 'Other' ? '' : opt)}
+                    style={{ padding:'5px 9px', borderRadius:999, border:`1px solid ${targetCustomer === opt ? '#1D6B45' : C.bd}`, background:targetCustomer === opt?'#F0FDF4':C.sur, color:targetCustomer === opt?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
               <input value={targetCustomer} onChange={e => setTargetCustomer(e.target.value)}
                 placeholder="예) busy parents, Amazon shoppers comparing premium options"
                 style={{ width: '100%', padding: '10px 13px', border: fieldBorder('targetCustomer'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Customer Pain Point">
+            <SubQ label={categoryQuestions.customerPainPoint}>
               <input value={customerPainPoint} onChange={e => setCustomerPainPoint(e.target.value)}
                 placeholder="구매자가 해결하고 싶은 불편함"
                 style={{ width: '100%', padding: '10px 13px', border: fieldBorder('customerPainPoint'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Buying Motivation">
+            <SubQ label={categoryQuestions.buyingMotivation}>
               <input value={buyingMotivation} onChange={e => setBuyingMotivation(e.target.value)}
                 placeholder="왜 지금 구매해야 하는지"
                 style={{ width: '100%', padding: '10px 13px', border: fieldBorder('buyingMotivation'), borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Product Benefits">
+            <SubQ label={categoryQuestions.productBenefits}>
               <textarea value={productBenefits} onChange={e => setProductBenefits(e.target.value)}
                 placeholder="전환에 중요한 benefit을 적어주세요."
                 style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: fieldBorder('productBenefits'), borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Product Features">
+            <SubQ label={categoryQuestions.productFeatures}>
               <textarea value={productFeatures} onChange={e => setProductFeatures(e.target.value)}
                 placeholder="소재, 기능, 구성품, 사양 등 구체적인 feature"
                 style={{ width: '100%', minHeight: 64, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.7, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>
-            <SubQ label="Differentiation">
+            <SubQ label={categoryQuestions.differentiation}>
               <textarea ref={diffRef} value={quiz.differentiator} onChange={e => updQuiz('differentiator', e.target.value)}
                 placeholder="경쟁 제품과 다르게 말할 수 있는 사실 기반 차별점"
                 style={{ width: '100%', minHeight: 72, padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', resize: 'vertical', fontSize: 13.5, lineHeight: 1.8, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color .15s' }}
               />
             </SubQ>
             <SubQ label="Brand Tone">
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:8 }}>
+                {BRAND_TONE_OPTIONS.map(opt => (
+                  <button key={opt} onClick={() => setBrandToneInput(opt === 'Other' ? '' : opt)}
+                    style={{ padding:'5px 9px', borderRadius:999, border:`1px solid ${brandToneInput === opt ? '#1D6B45' : C.bd}`, background:brandToneInput === opt?'#F0FDF4':C.sur, color:brandToneInput === opt?'#1D6B45':C.mu, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
               <input value={brandToneInput} onChange={e => setBrandToneInput(e.target.value)}
                 placeholder="예) premium clinical, warm DTC, technical, minimalist"
+                style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </SubQ>
+            <SubQ label="Additional Tone Detail">
+              <input value={brandToneDetail} onChange={e => setBrandToneDetail(e.target.value)}
+                placeholder="Premium but not too cold. Natural and trustworthy."
                 style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${C.bd}`, borderRadius: 10, outline: 'none', fontSize: 13.5, color: C.tx, background: C.alt, fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </SubQ>

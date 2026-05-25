@@ -95,17 +95,19 @@ export async function capturePNG(el, filename, opts = {}) {
     await new Promise(r => requestAnimationFrame(r))
   }
 
+  const exportW = Number(el.dataset?.canvasWidth) || el.offsetWidth
+  const exportH = Number(el.dataset?.canvasHeight) || el.offsetHeight
   let canvas
   try {
     canvas = await h2c(el, {
-      scale: 2,
+      scale: opts.scale || 1,
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
       logging: false,
-      windowWidth: el.offsetWidth,
-      width:  el.offsetWidth,
-      height: el.offsetHeight,
+      windowWidth: exportW,
+      width:  exportW,
+      height: exportH,
       ...opts,
     })
   } finally {

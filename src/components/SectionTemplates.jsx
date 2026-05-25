@@ -98,7 +98,7 @@ export function ImageAdjust({ url, editing, imgMeta, onMetaChange, fixedH, fitMo
 }
 
 /* ── ImgBox: 이미지 슬롯 (업로드 + ImageAdjust 통합) ── */
-export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMetaChange, fixedH, fitMode }) {
+export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMetaChange, fixedH, fitMode, onFitChange }) {
   const ref = useRef(null)
   const sampleRef = useRef(SAMPLE_IMGS[Math.floor(Math.random() * SAMPLE_IMGS.length)])
   const handleFile = e => {
@@ -141,6 +141,12 @@ export function ImgBox({ url, t, editing, onImgChange, minH = 320, imgMeta, onMe
         <button onClick={e => { e.stopPropagation(); ref.current?.click() }}
           style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, padding: '8px 18px', fontSize: 13, fontWeight: 700, background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
           📷 Replace
+        </button>
+      )}
+      {editing && onFitChange && fixedH && (
+        <button onClick={e => { e.stopPropagation(); onFitChange(fitMode === 'contain' ? 'cover' : 'contain') }}
+          style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, padding: '8px 12px', fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.9)', color: '#111', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 8, cursor: 'pointer' }}>
+          Fit: {fitMode === 'contain' ? 'Contain' : 'Cover'}
         </button>
       )}
       <ImageAdjust url={url} editing={editing} imgMeta={imgMeta} onMetaChange={onMetaChange || (() => {})} fixedH={fixedH} fitMode={fitMode} />
@@ -364,7 +370,7 @@ export function TplFullHero({ s, img, t, editing, onChange, secMeta, onSecMeta, 
       <div style={{ position: 'relative', height: 1529 }}>
         {imgNode
           ? <ImgBox url={imgNode} t={t} editing={editing} onImgChange={v => onChange('secImg', v)}
-              imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={1529} fitMode="cover" />
+              imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={1529} fitMode={s.imageFit || 'cover'} onFitChange={v => onChange('imageFit', v)} />
           : <div style={{ height: 1529, background: `linear-gradient(160deg, ${t.ac}44 0%, ${t.bg} 100%)` }} />
         }
         {/* 전체 그라데이션 오버레이 */}
@@ -419,7 +425,7 @@ export function TplTopBottom({ s, img, t, editing, onChange, secMeta, onSecMeta,
       <div>
         {imgNode
           ? <ImgBox url={imgNode} t={t} editing={editing} onImgChange={v => onChange('secImg', v)}
-              imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={920} fitMode="cover" />
+              imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={920} fitMode={s.imageFit || 'cover'} onFitChange={v => onChange('imageFit', v)} />
           : <div style={{ height: 920, background: `linear-gradient(135deg, ${t.ac}44 0%, ${t.sub} 100%)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontSize: 64, opacity: 0.15 }}>📷</span>
@@ -468,7 +474,7 @@ export function TplLeftRight({ s, img, t, editing, onChange, secMeta, onSecMeta,
     <div style={{ flex: '0 0 387px', overflow: 'hidden', minHeight: 900 }}>
       {imgNode
         ? <ImgBox url={imgNode} t={t} editing={editing} onImgChange={v => onChange('secImg', v)}
-            imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={900} fitMode="cover" />
+            imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={900} fitMode={s.imageFit || 'cover'} onFitChange={v => onChange('imageFit', v)} />
         : <div style={{ height: 900, background: t.sub, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: 48, opacity: 0.15 }}>📷</span>
           </div>
@@ -635,7 +641,7 @@ export function TplStory({ s, img, t, editing, onChange, secMeta, onSecMeta, onF
         <div style={{ flex: 1, overflow: 'hidden' }}>
           {imgNode
             ? <ImgBox url={imgNode} t={t} editing={editing} onImgChange={v => onChange('secImg', v)}
-                imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={520} fitMode="cover" />
+                imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={520} fitMode={s.imageFit || 'cover'} onFitChange={v => onChange('imageFit', v)} />
             : <div style={{ height: 520, background: t.sub }} />
           }
         </div>
@@ -702,7 +708,7 @@ export function TplHowTo({ s, img, t, editing, onChange, secMeta, onSecMeta, onF
       {/* 중단: 큰 이미지 */}
       {imgNode && (
         <ImgBox url={imgNode} t={t} editing={editing} onImgChange={v => onChange('secImg', v)}
-          imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={540} fitMode="cover" />
+          imgMeta={secMeta?.img1} onMetaChange={m => onSecMeta?.('img1', m)} fixedH={540} fitMode={s.imageFit || 'cover'} onFitChange={v => onChange('imageFit', v)} />
       )}
 
       {/* 서브타이틀 */}
