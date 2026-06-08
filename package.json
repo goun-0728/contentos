@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "vite",
+    "postinstall": "playwright install chromium",
+    "next:dev": "next dev",
     "build": "next build",
+    "review:build": "vite build",
+    "collect:naver": "node scripts/naver-smartstore-review-collector.mjs",
+    "collector:web": "node scripts/review-collector-web.mjs",
+    "review:app": "node review-collector/app/server.mjs",
     "start": "next start",
     "lint": "next lint"
   },
@@ -20,15 +26,18 @@
     "@tiptap/react": "^3.24.0",
     "@tiptap/starter-kit": "^3.24.0",
     "next": "^15.3.3",
+    "playwright": "^1.52.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.0",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "tailwindcss": "^4.1.8",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }

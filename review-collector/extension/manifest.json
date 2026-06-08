@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "리뷰 클레임 수집기",
+  "version": "1.0.0",
+  "description": "네이버 스마트스토어 상품 페이지의 공개 리뷰를 수집하여 로컬 웹앱으로 전송합니다.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://localhost/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "리뷰 클레임 수집기"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://smartstore.naver.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
