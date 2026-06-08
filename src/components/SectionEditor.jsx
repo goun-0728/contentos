@@ -329,7 +329,7 @@ export default function SectionEditor({
     return { fontSize: def.fontSize || 28, color: def.color || '#ffffff', fontWeight: def.fontWeight || 700, fontFamily: '', ...(dr.textStyles?.[key] || {}) }
   }
   const getNamedPos = key => {
-    const def = NAMED_BLOCKS.find(b => b.key === key) || {}
+    const def = NAMED_BLOCKS.find(b => b.key === key) || { x: 40, y: 40, w: 780 }
     return { x: def.x, y: def.y, w: def.w, ...(dr.blockPositions?.[key] || {}) }
   }
 
