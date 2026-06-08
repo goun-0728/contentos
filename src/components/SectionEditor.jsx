@@ -9,8 +9,8 @@ const CARD_H = 640
 
 export const NAMED_BLOCKS = [
   { key: 'mainCopy', label: '메인', x: 40, y: 40,  w: 780, fontSize: 72, color: '#ffffff', fontWeight: 900 },
-  { key: 'subCopy',  label: '서브', x: 40, y: 200, w: 780, fontSize: 28, color: 'rgba(255,255,255,0.85)', fontWeight: 400 },
-  { key: 'bodyText', label: '내용', x: 40, y: 330, w: 780, fontSize: 20, color: 'rgba(255,255,255,0.72)', fontWeight: 400 },
+  { key: 'subCopy',  label: '서브', x: 40, y: 220, w: 780, fontSize: 28, color: 'rgba(255,255,255,0.85)', fontWeight: 400 },
+  { key: 'bodyText', label: '내용', x: 40, y: 370, w: 780, fontSize: 20, color: 'rgba(255,255,255,0.72)', fontWeight: 400 },
 ]
 
 /* 패널 아이콘 버튼이 textarea 포커스를 빼앗지 않고 텍스트를 삽입하기 위한 공유 참조 */
