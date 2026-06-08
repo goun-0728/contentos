@@ -4,13 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "postinstall": "playwright install chromium",
     "next:dev": "next dev",
     "build": "next build",
     "review:build": "vite build",
-    "collect:naver": "node scripts/naver-smartstore-review-collector.mjs",
-    "collector:web": "node scripts/review-collector-web.mjs",
-    "review:app": "node review-collector/app/server.mjs",
+    "collector:web": "node app/review-collector/server.mjs",
+    "review:app": "node app/review-collector/server.mjs",
     "start": "next start",
     "lint": "next lint"
   },
@@ -25,8 +23,9 @@
     "@tiptap/extension-underline": "^3.24.0",
     "@tiptap/react": "^3.24.0",
     "@tiptap/starter-kit": "^3.24.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "next": "^15.3.3",
-    "playwright": "^1.52.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
