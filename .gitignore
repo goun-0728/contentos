@@ -5,3 +5,11 @@ dist
 .env.local
 .DS_Store
 .vercel
+
+# playwright 의존 스크립트 - Vercel 빌드 제외
+scripts/naver-smartstore-review-collector.mjs
+scripts/review-collector-web.mjs
+review-debug.html
+review-debug.png
+reviews.csv
+reviews.json
