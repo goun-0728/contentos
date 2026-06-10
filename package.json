@@ -7,7 +7,6 @@
     "next:dev": "next dev",
     "build": "next build",
     "review:build": "vite build",
-    "collector:web": "node app/review-collector/server.mjs",
     "review:app": "node app/review-collector/server.mjs",
     "start": "next start",
     "lint": "next lint"

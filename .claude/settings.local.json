@@ -12,7 +12,15 @@
       "Bash(npm show *)",
       "Bash(node *)",
       "Bash(git rm *)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(ping -n 4 127.0.0.1)",
+      "Bash(curl -s -o nul -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(start *)",
+      "Bash(vercel --version)",
+      "Bash(netlify --version)",
+      "Read(//mnt/c/Users/DS/**)",
+      "Bash(vercel --prod --yes)",
+      "WebFetch(domain:contentos-one-theta.vercel.app)"
     ]
   }
 }

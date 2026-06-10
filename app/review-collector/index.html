@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>리뷰 클레임 수집기</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <p class="eyebrow">Chrome Extension Receiver</p>
+        <h1>리뷰 클레임 수집기</h1>
+        <p>크롬 확장프로그램에서 수집한 리뷰를 저장하고 관리합니다.</p>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel settings">
+        <div>
+          <h2>기본 저장값</h2>
+          <p>확장프로그램에서 리뷰가 들어오면 아래 품목명/업체명과 함께 저장됩니다.</p>
+        </div>
+        <label>
+          품목명
+          <input id="itemName" placeholder="예: 김치" />
+        </label>
+        <label>
+          업체명
+          <input id="vendorName" placeholder="예: 네이버 스마트스토어 업체명" />
+        </label>
+        <button id="saveSettings" type="button">기본값 저장</button>
+      </section>
+
+      <section class="status-card">
+        <div class="pulse"></div>
+        <div>
+          <strong>확장프로그램에서 전송된 리뷰 수신 대기 중</strong>
+          <span id="statusText">아직 새 리뷰가 들어오지 않았습니다.</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="table-head">
+          <div>
+            <h2>리뷰 목록</h2>
+            <p><span id="count">0</span>건 저장됨</p>
+          </div>
+          <div class="actions">
+            <button id="downloadCsv" type="button">CSV 다운로드</button>
+            <button id="clearAll" class="secondary danger" type="button">전체 삭제</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>수집일시</th>
+                <th>품목명</th>
+                <th>업체명</th>
+                <th>상품URL</th>
+                <th>리뷰내용</th>
+                <th>출처</th>
+              </tr>
+            </thead>
+            <tbody id="reviewBody">
+              <tr>
+                <td class="empty" colspan="6">저장된 리뷰가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./client.js"></script>
+  </body>
+</html>
