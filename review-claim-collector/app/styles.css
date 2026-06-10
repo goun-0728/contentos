@@ -1,0 +1,186 @@
+:root {
+  color: #172033;
+  background: #f4f6f9;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f4f6f9;
+}
+
+.appShell {
+  width: min(1180px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 34px 0 64px;
+}
+
+.hero {
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #315475;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+h1,
+h2 {
+  margin: 0;
+  color: #0f2744;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.25;
+}
+
+.hero p,
+.panel p,
+.status {
+  color: #667487;
+  line-height: 1.65;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.stat,
+.panel {
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 39, 68, 0.05);
+}
+
+.stat {
+  padding: 16px;
+}
+
+.stat span {
+  display: block;
+  color: #667487;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stat strong {
+  display: block;
+  margin-top: 8px;
+  color: #0f2744;
+  font-size: 24px;
+}
+
+.panel {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.toolbar,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #102a46;
+  color: #fff;
+  padding: 0 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+button.secondary {
+  border: 1px solid #c8d2df;
+  background: #eef2f6;
+  color: #213a56;
+}
+
+button.danger {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+textarea {
+  width: 100%;
+  min-height: 130px;
+  margin-top: 10px;
+  border: 1px solid #cfd7e3;
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+.tableWrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e8edf3;
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+th {
+  background: #f1f4f8;
+  color: #30445d;
+  font-size: 13px;
+}
+
+a {
+  color: #0f4f8a;
+  font-weight: 800;
+}
+
+.reviewText {
+  max-width: 460px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.empty {
+  padding: 38px 12px;
+  text-align: center;
+  color: #667487;
+}
+
+@media (max-width: 760px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}

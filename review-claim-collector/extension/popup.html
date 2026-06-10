@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        width: 390px;
+        margin: 0;
+        padding: 16px;
+        background: #f4f6f9;
+        color: #172033;
+        font-family: "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+      }
+      h1 {
+        margin: 0 0 12px;
+        color: #0f2744;
+        font-size: 18px;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+        color: #26384f;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      input[type="text"],
+      input[type="url"] {
+        width: 100%;
+        border: 1px solid #cfd7e3;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 10px;
+        font: inherit;
+      }
+      .check {
+        display: flex;
+        grid-template-columns: none;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+      }
+      .actions {
+        display: grid;
+        gap: 8px;
+      }
+      button {
+        width: 100%;
+        min-height: 42px;
+        border: 0;
+        border-radius: 8px;
+        background: #102a46;
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+      }
+      button.secondary {
+        border: 1px solid #c8d2df;
+        background: #eef2f6;
+        color: #213a56;
+      }
+      button:disabled {
+        opacity: .55;
+        cursor: wait;
+      }
+      #status,
+      #debugLog,
+      #preview {
+        margin-top: 12px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      #status {
+        min-height: 20px;
+        color: #667487;
+        white-space: pre-wrap;
+      }
+      #debugLog,
+      #preview {
+        display: none;
+        border: 1px solid #dce2ea;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 12px;
+      }
+      #debugLog {
+        max-height: 240px;
+        overflow: auto;
+        color: #26384f;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      #preview h2 {
+        margin: 0 0 8px;
+        color: #0f2744;
+        font-size: 14px;
+      }
+      .preview-item {
+        border-top: 1px solid #edf1f6;
+        padding-top: 9px;
+        margin-top: 9px;
+        color: #26384f;
+        word-break: break-word;
+      }
+      .preview-item strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #0f2744;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>리뷰 클레임 수집기</h1>
+    <label>
+      전송 대상 URL
+      <input id="targetUrl" type="url" placeholder="https://내프로젝트.vercel.app" />
+    </label>
+    <label>
+      품목명
+      <input id="itemName" type="text" placeholder="예: 김치" />
+    </label>
+    <label>
+      업체명
+      <input id="vendorName" type="text" placeholder="예: 네이버 스마트스토어 업체명" />
+    </label>
+    <label class="check">
+      <input id="claimOnly" type="checkbox" checked />
+      클레임 후보만 수집
+    </label>
+    <div class="actions">
+      <button id="collect" type="button">현재 페이지 리뷰 수집</button>
+      <button id="openTarget" class="secondary" type="button" disabled>웹앱으로 열어 전달</button>
+      <button id="downloadJson" class="secondary" type="button" disabled>JSON 다운로드</button>
+      <button id="saveDebug" class="secondary" type="button" disabled>review-debug.html 다운로드</button>
+    </div>
+    <div id="status">리뷰를 수집한 뒤 웹앱으로 전달하거나 JSON으로 다운로드하세요.</div>
+    <div id="debugLog"></div>
+    <div id="preview"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

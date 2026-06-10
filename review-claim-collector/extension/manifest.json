@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "리뷰 클레임 수집기",
+  "version": "1.0.0",
+  "description": "현재 보고 있는 네이버 스마트스토어 페이지의 보이는 리뷰 텍스트를 수집합니다.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:4174/*",
+    "https://*.vercel.app/*",
+    "https://smartstore.naver.com/*",
+    "https://brand.naver.com/*"
+  ],
+  "action": {
+    "default_title": "리뷰 수집",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://smartstore.naver.com/*",
+        "https://brand.naver.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
